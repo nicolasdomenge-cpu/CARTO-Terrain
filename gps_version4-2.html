@@ -1,0 +1,4793 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>App carto terrain - V4.2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+html, body {
+    margin: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    background: #f5f7fa;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --blue: #2c7be5;
+    --green: #198754;
+    --orange: #fd7e14;
+    --red: #dc3545;
+    --gray: #6c757d;
+    --dark: #343a40;
+    --white: #ffffff;
+    --shadow: 0 4px 14px rgba(0,0,0,0.16);
+    --radius: 12px;
+}
+
+/* PAGE D'ACCUEIL */
+#homePage {
+    display: flex;
+    min-height: 100%;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+}
+
+.home-card {
+    width: min(560px, 100%);
+    background: rgba(255,255,255,0.98);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    padding: 24px;
+    text-align: center;
+}
+
+.home-logo {
+    display: block;
+    margin: 0 auto 22px auto;
+    width: min(100%, 420px);
+    max-height: 220px;
+    object-fit: contain;
+    border-radius: 14px;
+}
+
+.home-title {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+    color: #1f2937;
+}
+
+.home-subtitle {
+    margin: 0 0 18px 0;
+    color: #555;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.home-field {
+    text-align: left;
+    margin-bottom: 16px;
+}
+
+.home-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 14px;
+    color: #374151;
+}
+
+.home-field input {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid #d0d7de;
+    border-radius: 12px;
+    font-size: 16px;
+    background: white;
+}
+
+.home-actions {
+    display: flex;
+    justify-content: center;
+}
+
+#homeEnterBtn {
+    min-width: 180px;
+}
+
+/* CONFIG */
+#configPage {
+    display: none;
+    padding: 16px;
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+#configPage h2 {
+    margin-top: 0;
+}
+
+#configPageHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    background: white;
+    padding: 14px 16px;
+    border-radius: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+
+#configPageHeader h2 {
+    margin: 0;
+}
+
+.field {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    background: white;
+    padding: 12px;
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    align-items: center;
+}
+
+.field input,
+.field select {
+    padding: 10px;
+    font-size: 15px;
+    border: 1px solid #d0d7de;
+    border-radius: 8px;
+}
+
+.field input[type="text"],
+.field input[type="number"] {
+    min-width: 180px;
+}
+
+.field-name {
+    flex: 1 1 220px;
+}
+
+.field-suggestions {
+    flex: 2 1 260px;
+}
+
+.suggestion-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.label-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.point-label-tooltip {
+    background: #ffffff;
+    color: #111111;
+    border: 1px solid rgba(0,0,0,0.35);
+    border-radius: 8px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.12);
+    padding: 3px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.point-label-tooltip:before {
+    display: none;
+}
+
+.field button {
+    background: var(--red);
+}
+
+.config-actions,
+.config-transfer-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.config-panel {
+    background: white;
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    margin-top: 14px;
+}
+
+.config-panel-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #444;
+}
+
+/* MAP */
+#mapPage {
+    display: none;
+    height: 100%;
+    position: relative;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+}
+
+button,
+.file-label {
+    padding: 11px 14px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--blue);
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.2;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+button:hover,
+.file-label:hover {
+    filter: brightness(0.97);
+}
+
+button.secondary,
+.file-label.secondary { background: var(--gray); }
+button.success { background: var(--green); }
+button.warning { background: var(--orange); }
+button.danger { background: var(--red); }
+
+input[type="file"] {
+    display: none;
+}
+
+#gpsInfo {
+    position: absolute;
+    top: calc(10px + env(safe-area-inset-top));
+    left: 10px;
+    background: rgba(255,255,255,0.97);
+    padding: 10px 12px;
+    border-radius: 10px;
+    z-index: 1000;
+    min-width: 170px;
+    max-width: 260px;
+    font-size: 13px;
+    line-height: 1.45;
+    box-shadow: var(--shadow);
+}
+
+#mainActions {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#mainActions button {
+    min-width: 120px;
+}
+
+#menuContainer {
+    position: absolute;
+    top: calc(10px + env(safe-area-inset-top));
+    right: 10px;
+    z-index: 1200;
+    width: 52px;
+}
+
+#menuToggle {
+    background: var(--dark);
+    min-width: 52px;
+    min-height: 52px;
+    font-size: 22px;
+    padding: 0;
+}
+
+#menuPanel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: rgba(255,255,255,0.98);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 10px;
+    min-width: 240px;
+    display: none;
+}
+
+#menuPanel.open {
+    display: block;
+}
+
+.menu-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 8px 0;
+}
+
+.menu-label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #444;
+    margin-top: 2px;
+}
+
+#basemapSelect {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #d0d7de;
+    background: white;
+    font-size: 14px;
+}
+
+#menuPanel button,
+#menuPanel .file-label {
+    width: 100%;
+    box-shadow: none;
+}
+
+#formPopup {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    padding: 16px;
+    display: none;
+    z-index: 1300;
+    box-shadow: 0 -6px 16px rgba(0,0,0,0.22);
+    max-height: min(60%, 520px);
+    overflow-y: auto;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+}
+
+#formTitle {
+    margin: 0 0 12px 0;
+}
+
+#pointModeInfo {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+#dynamicForm .form-row {
+    margin-bottom: 12px;
+}
+
+#dynamicForm label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+#dynamicForm input[type="text"],
+#dynamicForm input[type="number"],
+#dynamicForm select {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #d0d7de;
+    border-radius: 10px;
+    background: white;
+}
+
+#dynamicForm input[type="checkbox"] {
+    transform: scale(1.3);
+    margin-top: 8px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+
+.small-note {
+    font-size: 12px;
+    color: #666;
+    margin-top: 8px;
+    line-height: 1.45;
+}
+
+.status-bar {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    z-index: 1000;
+    background: rgba(255,255,255,0.95);
+    border-radius: 10px;
+    padding: 8px 10px;
+    box-shadow: var(--shadow);
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.status-bar.compact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+#movePanel {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: calc(64px + env(safe-area-inset-bottom));
+    z-index: 1280;
+    background: rgba(255,255,255,0.98);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 12px;
+    display: none;
+}
+
+#movePanel.open {
+    display: block;
+}
+
+#moveInfo {
+    font-size: 13px;
+    color: #333;
+    line-height: 1.45;
+    margin-bottom: 10px;
+}
+
+/* NAVIGATION PANEL */
+#navigationPanel {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    z-index: 1450;
+    display: none;
+    flex-direction: column;
+    background: rgba(255,255,255,0.96);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+#navigationPanel.open {
+    display: flex;
+}
+
+#navHeader {
+    padding: calc(12px + env(safe-area-inset-top)) 12px 12px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #e5e7eb;
+    background: white;
+}
+
+#navHeaderTitle {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+#navContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 20px;
+    text-align: center;
+}
+
+#navDistance {
+    font-size: 26px;
+    font-weight: bold;
+    color: #1f2937;
+}
+
+#navAccuracy {
+    font-size: 14px;
+    color: #555;
+}
+
+#navCoords {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+}
+
+#navInfo {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    max-width: 520px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.leaflet-popup-content {
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.popup-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.popup-actions button {
+    padding: 8px 10px;
+    font-size: 13px;
+    box-shadow: none;
+}
+
+#menuBackdrop,
+#pointsListBackdrop {
+    position: absolute;
+    inset: 0;
+    background: transparent;
+}
+
+#menuBackdrop {
+    z-index: 1150;
+    display: none;
+}
+
+#menuBackdrop.open {
+    display: block;
+}
+
+#pointsListBackdrop {
+    z-index: 1240;
+    display: none;
+    background: rgba(0,0,0,0.18);
+}
+
+#pointsListBackdrop.open {
+    display: block;
+}
+
+#pointsListPanel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: min(460px, 100%);
+    height: 100%;
+    background: rgba(255,255,255,0.99);
+    z-index: 1250;
+    box-shadow: -8px 0 24px rgba(0,0,0,0.18);
+    display: none;
+    flex-direction: column;
+}
+
+#pointsListPanel.open {
+    display: flex;
+}
+
+#pointsListHeader {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    background: white;
+}
+
+#pointsListHeaderTitle {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+#pointsListHeaderActions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+#pointsListTools {
+    padding: 12px 12px 8px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    background: white;
+}
+
+#pointsListToolsTop,
+#pointsListToolsBottom {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+#pointsListToolsBottom {
+    margin-top: 8px;
+}
+
+#selectionInfo {
+    font-size: 13px;
+    color: #444;
+    padding: 4px 2px;
+}
+
+.context-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.context-actions button {
+    box-shadow: none;
+}
+
+.context-actions-info {
+    font-size: 12px;
+    color: #666;
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+#pointsListBody {
+    padding: 12px;
+    overflow-y: auto;
+    flex: 1;
+    background: #f8fafc;
+}
+
+#pointsListEmpty {
+    color: #666;
+    font-size: 14px;
+    padding: 14px;
+    background: white;
+    border-radius: 12px;
+}
+
+.point-card {
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+
+.point-card-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.point-card-header-left {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.point-checkbox {
+    transform: scale(1.2);
+    margin-top: 2px;
+}
+
+.point-card-title {
+    font-weight: bold;
+    font-size: 14px;
+    color: #222;
+}
+
+.point-card-coords {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.point-card-preview {
+    font-size: 13px;
+    color: #333;
+    line-height: 1.45;
+    margin-bottom: 10px;
+}
+
+.point-card-preview-line {
+    margin-bottom: 4px;
+}
+
+.point-card-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.point-card-actions button {
+    padding: 8px 10px;
+    font-size: 13px;
+    box-shadow: none;
+}
+
+.network-online {
+    color: #0a7a2f;
+    font-weight: bold;
+}
+
+.network-offline {
+    color: #b54708;
+    font-weight: bold;
+}
+
+
+#landmarksBackdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 1340;
+    display: none;
+    background: rgba(0,0,0,0.18);
+}
+
+#landmarksBackdrop.open {
+    display: block;
+}
+
+#landmarksPanel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: min(460px, 100%);
+    height: 100%;
+    background: rgba(255,255,255,0.99);
+    z-index: 1350;
+    box-shadow: -8px 0 24px rgba(0,0,0,0.18);
+    display: none;
+    flex-direction: column;
+}
+
+#landmarksPanel.open {
+    display: flex;
+}
+
+#landmarksHeader {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(180deg, #ffffff 0%, #fff5f5 100%);
+}
+
+#landmarksHeaderLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#landmarksHeaderTitle {
+    font-weight: bold;
+    font-size: 16px;
+    color: #7f1d1d;
+}
+
+#landmarksHeaderSubtitle {
+    font-size: 12px;
+    color: #7f1d1d;
+}
+
+#landmarksBody {
+    padding: 12px;
+    overflow-y: auto;
+    flex: 1;
+    background: #fff7f7;
+}
+
+#landmarksTools,
+#landmarkFormCard,
+.landmark-card {
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    margin-bottom: 12px;
+}
+
+.landmark-card.selected {
+    border: 2px solid var(--orange);
+    background: #fffaf3;
+}
+
+.landmark-card-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.landmark-card-header-left {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.landmark-checkbox {
+    transform: scale(1.2);
+    margin-top: 2px;
+}
+
+#landmarksToolsTitle {
+    font-weight: bold;
+    color: #7f1d1d;
+    margin-bottom: 10px;
+}
+
+#landmarksToolsActions,
+.landmark-form-actions,
+.landmark-card-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#landmarksToolsActions button,
+.landmark-form-actions button,
+.landmark-card-actions button {
+    box-shadow: none;
+}
+
+.landmark-card {
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.landmark-card:hover,
+.point-card:hover {
+    transform: translateY(-1px);
+}
+
+.landmark-card.selected,
+.point-card.selected {
+    border-color: #2c7be5;
+}
+
+.landmark-form-row {
+    margin-bottom: 12px;
+}
+
+.landmark-form-row label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.landmark-form-row input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #d0d7de;
+    border-radius: 10px;
+    background: white;
+}
+
+.landmark-card-title {
+    font-weight: bold;
+    font-size: 15px;
+    color: #7f1d1d;
+    margin-bottom: 6px;
+}
+
+.landmark-card-coords,
+.landmark-card-meta {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.45;
+    margin-bottom: 10px;
+}
+
+#landmarksEmpty {
+    color: #666;
+    font-size: 14px;
+    padding: 14px;
+    background: white;
+    border-radius: 12px;
+}
+
+.landmark-red-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+    line-height: 1;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.45));
+}
+
+
+#photoSection {
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #fafafa;
+}
+
+#photoSection label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+#photoActions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+#photoPreview {
+    min-height: 36px;
+    font-size: 13px;
+    color: #666;
+}
+
+#photoPreview img {
+    display: block;
+    max-width: 100%;
+    max-height: 220px;
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+}
+
+
+#kmlBackdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 1360;
+    display: none;
+    background: rgba(0,0,0,0.18);
+}
+
+#kmlBackdrop.open {
+    display: block;
+}
+
+#kmlPanel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: min(460px, 100%);
+    height: 100%;
+    background: rgba(255,255,255,0.99);
+    z-index: 1370;
+    box-shadow: -8px 0 24px rgba(0,0,0,0.18);
+    display: none;
+    flex-direction: column;
+}
+
+#kmlPanel.open {
+    display: flex;
+}
+
+#kmlHeader {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%);
+}
+
+#kmlHeaderTitle {
+    font-weight: bold;
+    font-size: 16px;
+    color: #4c1d95;
+}
+
+#kmlHeaderSubtitle {
+    font-size: 12px;
+    color: #5b21b6;
+}
+
+#kmlBody {
+    padding: 12px;
+    overflow-y: auto;
+    flex: 1;
+    background: #faf5ff;
+}
+
+#kmlTools,
+.kml-card {
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    margin-bottom: 12px;
+}
+
+#kmlToolsActions,
+.kml-card-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#kmlToolsActions button,
+.kml-card-actions button {
+    box-shadow: none;
+}
+
+.kml-card-title {
+    font-weight: bold;
+    font-size: 15px;
+    color: #4c1d95;
+    margin-bottom: 6px;
+}
+
+.kml-card-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.kml-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex: 0 0 12px;
+    border: 1px solid rgba(0,0,0,0.25);
+}
+
+.kml-card-meta {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.45;
+    margin-bottom: 10px;
+}
+
+#kmlEmpty {
+    color: #666;
+    font-size: 14px;
+    padding: 14px;
+    background: white;
+    border-radius: 12px;
+}
+
+@media (max-width: 700px) {
+    .home-card {
+        padding: 18px;
+    }
+
+    .home-logo {
+        width: min(100%, 300px);
+        max-height: 170px;
+    }
+
+    #gpsInfo {
+        top: calc(10px + env(safe-area-inset-top));
+        left: 10px;
+        right: 70px;
+        min-width: 0;
+        max-width: none;
+    }
+
+    #mainActions {
+        top: auto;
+        bottom: calc(100px + env(safe-area-inset-bottom));
+        left: 10px;
+        right: 10px;
+        transform: none;
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    #mainActions button {
+        flex: 1;
+        min-width: 0;
+        min-height: 50px;
+        font-size: 15px;
+    }
+
+    #menuContainer {
+        top: calc(10px + env(safe-area-inset-top));
+        right: 10px;
+    }
+
+    #menuPanel {
+        right: 0;
+        min-width: 220px;
+        max-width: min(280px, calc(100vw - 20px));
+    }
+
+    #formPopup {
+        max-height: 68%;
+    }
+
+    .field {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .field-name,
+    .field-suggestions {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .config-actions,
+    .config-transfer-actions,
+    #pointsListToolsTop,
+    #pointsListToolsBottom,
+    #pointsListHeaderActions,
+    #movePanel .form-actions,
+    .context-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #pointsListPanel {
+        width: 100%;
+    }
+
+    #landmarksPanel {
+        width: 100%;
+    }
+
+    #kmlPanel {
+        width: 100%;
+    }
+
+    .status-bar {
+        font-size: 11px;
+        padding: 7px 9px;
+    }
+
+    #navDistance {
+        font-size: 22px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="homePage">
+    <div class="home-card">
+        <img class="home-logo" src="https://www.valrance.com/img/interface/logo.jpg" alt="Logo">
+        <h1 class="home-title">Application carto terrain v-4.2</h1>
+        <p class="home-subtitle">
+            Saisis ton nom une fois pour l’associer automatiquement aux points créés sur cet appareil.
+        </p>
+
+        <div class="home-field">
+            <label for="usernameInput">Nom de l’utilisateur</label>
+            <input id="usernameInput" type="text" placeholder="Ex. Camille, Groupe A, Équipe 2">
+        </div>
+
+        <div class="home-actions">
+            <button id="homeEnterBtn" class="success" onclick="enterApp()">Entrer</button>
+        </div>
+    </div>
+</div>
+
+<div id="configPage">
+    <div id="configPageHeader">
+        <h2>Configuration des champs</h2>
+        <button class="secondary" onclick="closeConfigPage()">Fermer</button>
+    </div>
+
+    <div id="fieldsContainer"></div>
+
+    <div class="config-actions">
+        <button onclick="addField()">➕ Ajouter champ</button>
+        <button class="success" onclick="startApp()">🚀 Lancer carte</button>
+    </div>
+
+    <div class="config-panel">
+        <div class="config-panel-title">Configuration des champs</div>
+        <div class="config-transfer-actions">
+            <button class="warning" onclick="exportFieldsConfig()">📤 Exporter la configuration</button>
+            <button class="secondary" onclick="openConfigImportPicker()">📥 Importer une configuration</button>
+            <input id="configImportFile" type="file" accept=".json,application/json,text/plain" onchange="importFieldsConfig(event)">
+        </div>
+        <p class="small-note">
+            Cette exportation contient uniquement la structure des champs :
+            noms, types, listes suggérées et valeurs proposées.
+            Elle ne contient pas les points saisis.
+        </p>
+    </div>
+
+    <p class="small-note">
+        Pour les champs Texte, Entier ou Décimal, tu peux activer une liste suggérée.
+        Les valeurs doivent être séparées par un point-virgule <b>;</b>.
+        Exemple : <i>chêne ; hêtre ; pin</i> ou <i>1 ; 2 ; 3 ; 4</i>.<br>
+        Tu peux aussi choisir <b>un seul champ</b> comme <b>étiquette</b> pour l’afficher directement sur la carte au-dessus des points.
+    </p>
+</div>
+
+<div id="mapPage">
+    <div id="map"></div>
+
+    <div id="gpsInfo">GPS : OFF</div>
+
+    <div id="mainActions">
+        <button onclick="addPoint()">➕ Point</button>
+        <button class="secondary" onclick="centerOnUser()">🎯 Recentrer</button>
+    </div>
+
+    <div id="menuBackdrop" onclick="closeMenu()"></div>
+
+    <div id="menuContainer">
+        <button id="menuToggle" onclick="toggleMenu()" aria-label="Ouvrir le menu">☰</button>
+
+        <div id="menuPanel">
+            <div class="menu-section">
+                <div class="menu-label">Fond de carte</div>
+                <select id="basemapSelect" onchange="handleBasemapChange()">
+                    <option value="osm">OSM</option>
+                    <option value="ignPlan">IGN Plan</option>
+                    <option value="ignOrtho">IGN Orthophotos</option>
+                </select>
+            </div>
+
+            <div class="menu-divider"></div>
+
+            <div class="menu-section">
+                <button id="gpsToggleBtn" onclick="toggleGPSAndCloseMenu()">📍 Démarrer GPS</button>
+                <button onclick="openPointsList()">📋 Liste des points</button>
+                <button class="secondary" onclick="goBackToConfigAndCloseMenu()">⚙️ Champs</button>
+                <button class="warning" onclick="openLandmarksPanel()">📌 Repères</button>
+                <button class="secondary" onclick="openKMLPanel()">🗂 Couches KML</button>
+                <input id="kmlFileInput" type="file" accept=".kml,application/vnd.google-earth.kml+xml,text/xml,application/xml" onchange="importKML(event)">
+            </div>
+        </div>
+    </div>
+
+    <div id="pointsListBackdrop" onclick="closePointsList()"></div>
+
+    <div id="pointsListPanel">
+        <div id="pointsListHeader">
+            <div id="pointsListHeaderTitle">Liste des points</div>
+            <div id="pointsListHeaderActions">
+                <button class="danger" onclick="clearAllDataFromPointsList()">🗑 Tout effacer</button>
+                <button class="secondary" onclick="closePointsList()">Fermer</button>
+            </div>
+        </div>
+
+        <div id="pointsListTools">
+            <div id="pointsListToolsTop">
+                <button class="secondary" onclick="openPointsImportFilePicker()">📥 Import</button>
+                <input id="pointsImportFile" type="file" accept=".geojson,.json,application/geo+json,application/json,text/plain" onchange="importGeoJSON(event)">
+            </div>
+            <div id="pointsListToolsBottom">
+                <button class="secondary" onclick="toggleSelectAllPoints()">☑ Tout sélectionner / désélectionner</button>
+                <div id="selectionInfo">0 point sélectionné</div>
+            </div>
+            <div id="pointsSingleSelectionActions" class="context-actions">
+                <button class="secondary" onclick="zoomToSelectedPoint()">🎯 Zoom</button>
+                <button class="warning" onclick="editSelectedPoint()">✏️ Modifier</button>
+            </div>
+            <div id="pointsMultiSelectionActions" class="context-actions"></div>
+            <div id="pointsSelectionHint" class="context-actions-info">Sélectionnez un ou plusieurs points pour afficher les actions adaptées.</div>
+        </div>
+
+        <div id="pointsListBody"></div>
+    </div>
+
+    <div id="landmarksBackdrop" onclick="closeLandmarksPanel()"></div>
+
+    <div id="landmarksPanel">
+        <div id="landmarksHeader">
+            <div id="landmarksHeaderLeft">
+                <div id="landmarksHeaderTitle">Repères</div>
+                <div id="landmarksHeaderSubtitle">Marqueurs rouges + import/export GPX</div>
+            </div>
+            <button class="secondary" onclick="closeLandmarksPanel()">Fermer</button>
+        </div>
+
+        <div id="landmarksBody">
+            <div id="landmarkFormCard">
+                <h4 id="landmarkFormTitle">Nouveau repère</h4>
+
+                <div class="landmark-form-row">
+                    <label for="landmarkNameInput">Nom</label>
+                    <input id="landmarkNameInput" type="text" placeholder="Ex. Parking nord">
+                </div>
+
+                <div class="landmark-form-row">
+                    <label for="landmarkLatInput">Latitude</label>
+                    <input id="landmarkLatInput" type="number" step="any" inputmode="decimal" placeholder="Ex. 43.604652">
+                </div>
+
+                <div class="landmark-form-row">
+                    <label for="landmarkLngInput">Longitude</label>
+                    <input id="landmarkLngInput" type="number" step="any" inputmode="decimal" placeholder="Ex. 1.444209">
+                </div>
+
+                <div class="landmark-form-actions">
+                    <button class="success" onclick="saveLandmark()">💾 Enregistrer</button>
+                    <button class="secondary" onclick="useCurrentPositionForLandmark()">📍 Ma position</button>
+                    <button class="secondary" onclick="resetLandmarkForm()">✨ Nouveau</button>
+                </div>
+
+                <p class="small-note">
+                    Les repères sont enregistrés localement sur cet appareil. Utilise <b>✨ Nouveau</b> pour vider le formulaire,
+                    et <b>📍 Déplacer</b> sur un repère pour le repositionner puis valider dans le panneau de déplacement.
+                </p>
+            </div>
+
+            <div id="landmarksTools">
+                <div id="landmarksToolsTitle">Gestion des repères</div>
+                <div id="landmarksToolsActions">
+                    <button class="secondary" onclick="openLandmarksImportFilePicker()">📥 Import GPX</button>
+                    <button class="danger" onclick="clearAllLandmarks()">🗑 Tout supprimer</button>
+                    <input id="landmarksImportFile" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml,text/plain" onchange="importLandmarksGPX(event)">
+                </div>
+                <div id="landmarksToolsActions" style="margin-top:8px;">
+                    <button class="secondary" onclick="toggleSelectAllLandmarks()">☑ Tout sélectionner / désélectionner</button>
+                </div>
+                <div id="selectionInfoLandmarks" class="small-note" style="margin-top:8px;">0 repère sélectionné</div>
+                <div id="landmarkSingleSelectionActions" class="landmark-card-actions" style="display:none; margin-top:8px;">
+                    <button class="secondary" onclick="zoomToSelectedLandmark()">🎯 Zoom</button>
+                    <button class="warning" onclick="editSelectedLandmark()">✏️ Modifier</button>
+                </div>
+                <div id="landmarkMultiSelectionActions" class="landmark-card-actions" style="display:none; margin-top:8px;"></div>
+                <div id="landmarkSelectionHint" class="small-note">Clique sur une ligne pour une sélection unique, ou utilise les cases pour une sélection multiple.</div>
+                <p class="small-note">
+                    Les actions de liste sont volontairement limitées : <b>1 sélection</b> = zoom / modifier / supprimer ; <b>plusieurs</b> = exporter / supprimer. Sur la carte, les popups gardent toutes les actions actuelles.
+                </p>
+            </div>
+
+            <div id="landmarksList"></div>
+        </div>
+    </div>
+
+
+    <div id="kmlBackdrop" onclick="closeKMLPanel()"></div>
+
+    <div id="kmlPanel">
+        <div id="kmlHeader">
+            <div>
+                <div id="kmlHeaderTitle">Couches KML</div>
+                <div id="kmlHeaderSubtitle">Import, visibilité, suppression et ordre d'affichage</div>
+            </div>
+            <button class="secondary" onclick="closeKMLPanel()">Fermer</button>
+        </div>
+
+        <div id="kmlBody">
+            <div id="kmlTools">
+                <div id="kmlToolsActions">
+                    <button class="secondary" onclick="openKMLPicker()">➕ Ajouter une couche</button>
+                </div>
+                <p class="small-note">
+                    Les couches KML sont affichées en lecture seule. Tu peux les masquer, les supprimer
+                    et modifier leur ordre de superposition.
+                </p>
+            </div>
+
+            <div id="kmlList"></div>
+        </div>
+    </div>
+
+    <div id="formPopup">
+        <h3 id="formTitle">Nouveau point</h3>
+        <div id="pointModeInfo"></div>
+        <div id="dynamicForm"></div>
+
+        <div id="photoSection">
+            <label>Photo</label>
+            <div id="photoActions">
+                <button type="button" class="secondary" id="photoActionBtn" onclick="triggerPhotoInput()">📷 Ajouter une photo</button>
+                <button type="button" class="danger hidden" id="photoDeleteBtn" onclick="removePhoto()">🗑 Supprimer la photo</button>
+            </div>
+            <div id="photoPreview"><i>Aucune photo</i></div>
+        </div>
+
+        <input id="photoInput" type="file" accept="image/*" capture="environment" onchange="handlePhotoFileChange(event)">
+
+        <div class="form-actions">
+            <button id="saveBtn" class="success" onclick="savePoint()">💾 Sauver</button>
+            <button id="deleteBtn" class="danger hidden" onclick="deleteCurrentEditingPoint()">🗑 Supprimer</button>
+            <button class="secondary" onclick="closeForm()">Annuler</button>
+        </div>
+    </div>
+
+    <div id="movePanel">
+        <div id="moveInfo"></div>
+        <div class="form-actions">
+            <button class="success" onclick="confirmMovePoint()">✅ Valider déplacement</button>
+            <button class="secondary" onclick="cancelMovePoint()">↩️ Annuler</button>
+        </div>
+    </div>
+
+<div id="navigationPanel">
+    <div id="navHeader">
+        <div id="navHeaderTitle">Navigation vers le point</div>
+        <button class="secondary" onclick="closeNavigation()">Fermer</button>
+    </div>
+
+    <div id="navContent">
+        <div id="navDistance">Distance : —</div>
+        <div id="navAccuracy">Précision : —</div>
+        <div id="navCoords">Point cible : —</div>
+        <div id="navInfo">Suis la ligne rouge pour atteindre le point.</div>
+    </div>
+</div>
+
+    <div id="statusBar" class="status-bar compact">
+        <span><b>Points :</b> <span id="featureCount">0</span></span>
+        <span>·</span>
+        <span><b>Réseau :</b> <span id="networkStatus"></span></span>
+        <span>·</span>
+        <span>Appui long = point</span>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+let map;
+let fields = [];
+let geojson = { type: "FeatureCollection", features: [] };
+
+let currentPos = null;
+let watchId = null;
+let userMarker = null;
+let hasCenteredOnFirstFix = false;
+
+let featuresLayer = null;
+let editingFeatureIndex = null;
+let pendingPointCoords = null;
+
+let longPressTimer = null;
+const LONG_PRESS_DELAY = 600;
+const KML_LAYER_COLORS = ["#2563eb", "#7c3aed", "#16a34a", "#ea580c", "#dc2626", "#0891b2", "#ca8a04"];
+
+let baseLayers = {};
+let currentBaseLayer = null;
+let currentBasemapKey = "osm";
+
+let selectedPointIndexes = new Set();
+let currentUsername = "";
+
+let markersByFeatureIndex = new Map();
+let movingFeatureIndex = null;
+let movingOriginalCoords = null;
+let movingCurrentCoords = null;
+let movingMarker = null;
+let navigationTarget = null;
+let navigationWatchId = null;
+let navigationLine = null;
+let landmarks = [];
+let landmarkMarkersLayer = null;
+let landmarkMarkersById = new Map();
+let editingLandmarkId = null;
+let selectedLandmarkIds = new Set();
+let lastSelectedLandmarkId = null;
+let movingLandmarkId = null;
+let movingLandmarkOriginalCoords = null;
+let movingLandmarkCurrentCoords = null;
+let movingLandmarkMarker = null;
+let currentPhotoData = null;
+let kmlLayers = [];
+let kmlLayerIdCounter = 0;
+
+const STORAGE_KEYS = {
+    fields: "carto_fields",
+    geojson: "carto_geojson",
+    configStarted: "carto_started",
+    basemap: "carto_basemap",
+    username: "carto_username",
+    landmarks: "carto_landmarks",
+    kmlLayers: "carto_kml_layers"
+};
+
+function createUserPositionIcon() {
+    return L.divIcon({
+        className: "userPositionIcon",
+        html: `
+            <div style="
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #FFD600;
+            border: 3px solid rgba(0,0,0,0.85);
+            box-shadow:
+                0 0 0 2px rgba(255,255,255,0.9),
+                0 2px 8px rgba(0,0,0,0.35);
+            "></div>
+        `,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+    });
+}
+
+function saveState() {
+    localStorage.setItem(STORAGE_KEYS.fields, JSON.stringify(fields));
+    localStorage.setItem(STORAGE_KEYS.geojson, JSON.stringify(geojson));
+    localStorage.setItem(STORAGE_KEYS.basemap, currentBasemapKey);
+    localStorage.setItem(STORAGE_KEYS.username, currentUsername || "");
+    localStorage.setItem(STORAGE_KEYS.landmarks, JSON.stringify(landmarks));
+    localStorage.setItem(STORAGE_KEYS.kmlLayers, JSON.stringify(
+        kmlLayers.map(item => ({
+            id: item.id,
+            name: item.name,
+            xmlText: item.xmlText,
+            visible: item.visible,
+            color: item.color
+        }))
+    ));
+}
+
+function loadState() {
+    const savedFields = localStorage.getItem(STORAGE_KEYS.fields);
+    const savedGeojson = localStorage.getItem(STORAGE_KEYS.geojson);
+    const savedBasemap = localStorage.getItem(STORAGE_KEYS.basemap);
+    const savedUsername = localStorage.getItem(STORAGE_KEYS.username);
+    const savedLandmarks = localStorage.getItem(STORAGE_KEYS.landmarks);
+    const savedKMLLayers = localStorage.getItem(STORAGE_KEYS.kmlLayers);
+
+    if (savedFields) {
+        try {
+            fields = JSON.parse(savedFields);
+        } catch (e) {
+            console.error("Erreur chargement fields", e);
+            fields = [];
+        }
+    }
+
+    if (savedGeojson) {
+        try {
+            geojson = JSON.parse(savedGeojson);
+            if (!geojson || geojson.type !== "FeatureCollection" || !Array.isArray(geojson.features)) {
+                geojson = { type: "FeatureCollection", features: [] };
+            }
+        } catch (e) {
+            console.error("Erreur chargement geojson", e);
+            geojson = { type: "FeatureCollection", features: [] };
+        }
+    }
+
+    if (savedBasemap) {
+        currentBasemapKey = savedBasemap;
+    }
+
+    if (typeof savedUsername === "string") {
+        currentUsername = savedUsername;
+    }
+
+    if (savedLandmarks) {
+        try {
+            const parsedLandmarks = JSON.parse(savedLandmarks);
+            landmarks = Array.isArray(parsedLandmarks) ? parsedLandmarks.map(sanitizeLandmark).filter(Boolean) : [];
+        } catch (e) {
+            console.error("Erreur chargement repères", e);
+            landmarks = [];
+        }
+    }
+
+    if (savedKMLLayers) {
+        try {
+            const parsedKMLLayers = JSON.parse(savedKMLLayers);
+            kmlLayers = Array.isArray(parsedKMLLayers)
+                ? parsedKMLLayers
+                    .filter(item => item && typeof item.xmlText === "string")
+                    .map(item => ({
+                        id: Number.isInteger(item.id) ? item.id : 0,
+                        name: String(item.name || "Couche KML"),
+                        xmlText: String(item.xmlText),
+                        visible: item.visible !== false,
+                        color: String(item.color || KML_LAYER_COLORS[0]),
+                        layerGroup: null
+                    }))
+                : [];
+            kmlLayerIdCounter = kmlLayers.reduce((m, item) => Math.max(m, item.id || 0), 0);
+        } catch (e) {
+            console.error("Erreur chargement KML", e);
+            kmlLayers = [];
+        }
+    }
+}
+
+function sanitizeLandmark(raw) {
+    if (!raw || typeof raw !== "object") return null;
+
+    const id = String(raw.id || `repere_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`).trim();
+    const name = String(raw.name || "Repère").trim();
+    const lat = Number(raw.lat);
+    const lng = Number(raw.lng);
+    const createdAt = raw.createdAt ? String(raw.createdAt) : new Date().toISOString();
+
+    if (!name || !Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+
+    return { id, name, lat, lng, createdAt };
+}
+
+function getLandmarkById(id) {
+    return landmarks.find(item => item.id === id) || null;
+}
+
+function formatLandmarkDate(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "date inconnue";
+    return date.toLocaleString("fr-FR");
+}
+
+function escapeXml(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+}
+
+function downloadTextFile(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function createLandmarkIcon() {
+    return L.divIcon({
+        className: "landmarkRedMarker",
+        html: '<div class="landmark-red-icon">📍</div>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 24],
+        popupAnchor: [0, -20]
+    });
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+function getFirstElementText(parent, tagNames) {
+    if (!parent) return "";
+    for (const tagName of tagNames) {
+        const node = parent.getElementsByTagName(tagName)[0];
+        if (node && typeof node.textContent === "string" && node.textContent.trim() !== "") {
+            return node.textContent.trim();
+        }
+    }
+    return "";
+}
+
+function extractKMLProperties(placemark) {
+    const properties = {};
+    const name = getFirstElementText(placemark, ["name"]);
+    const description = getFirstElementText(placemark, ["description"]);
+
+    if (name) properties.name = name;
+    if (description) properties.description = description;
+
+    const simpleDataNodes = Array.from(placemark.getElementsByTagName("SimpleData"));
+    simpleDataNodes.forEach(node => {
+        const key = node.getAttribute("name");
+        const value = (node.textContent || "").trim();
+        if (key && value !== "") {
+            properties[key] = value;
+        }
+    });
+
+    const dataNodes = Array.from(placemark.getElementsByTagName("Data"));
+    dataNodes.forEach(node => {
+        const key = node.getAttribute("name");
+        const valueNode = node.getElementsByTagName("value")[0];
+        const value = valueNode ? (valueNode.textContent || "").trim() : "";
+        if (key && value !== "") {
+            properties[key] = value;
+        }
+    });
+
+    return properties;
+}
+
+function buildKMLPopupContent(properties) {
+    const entries = Object.entries(properties || {});
+    if (!entries.length) return "<b>KML</b>";
+
+    return entries
+        .map(([key, value]) => `<b>${escapeHtml(key)}</b> : ${escapeHtml(String(value))}`)
+        .join("<br>");
+}
+
+function parseKMLCoordinates(text) {
+    if (!text || typeof text !== "string") return [];
+    return text
+        .trim()
+        .split(/\s+/)
+        .map(chunk => {
+            const parts = chunk.split(",");
+            const lng = Number(parts[0]);
+            const lat = Number(parts[1]);
+            const alt = parts.length > 2 ? Number(parts[2]) : null;
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+            return alt !== null && Number.isFinite(alt) ? [lat, lng, alt] : [lat, lng];
+        })
+        .filter(Boolean);
+}
+
+function convertKMLPlacemarkToLeafletLayer(placemark) {
+    const properties = extractKMLProperties(placemark);
+    const popupContent = buildKMLPopupContent(properties);
+
+    const pointNode = placemark.getElementsByTagName("Point")[0];
+    if (pointNode) {
+        const coords = parseKMLCoordinates(getFirstElementText(pointNode, ["coordinates"]));
+        if (!coords.length) return null;
+        const layer = L.circleMarker([coords[0][0], coords[0][1]], {
+            radius: 6,
+            color: "#7c3aed",
+            weight: 2,
+            fillColor: "#c4b5fd",
+            fillOpacity: 0.95
+        });
+        layer.bindPopup(popupContent);
+        return layer;
+    }
+
+    const lineNode = placemark.getElementsByTagName("LineString")[0];
+    if (lineNode) {
+        const coords = parseKMLCoordinates(getFirstElementText(lineNode, ["coordinates"]));
+        if (!coords.length) return null;
+        const layer = L.polyline(coords.map(c => [c[0], c[1]]), {
+            color: "#7c3aed",
+            weight: 3,
+            opacity: 0.9
+        });
+        layer.bindPopup(popupContent);
+        return layer;
+    }
+
+    const polygonNode = placemark.getElementsByTagName("Polygon")[0];
+    if (polygonNode) {
+        const ringNodes = polygonNode.getElementsByTagName("LinearRing");
+        const latlngRings = [];
+        for (const ringNode of ringNodes) {
+            const coords = parseKMLCoordinates(getFirstElementText(ringNode, ["coordinates"]));
+            if (coords.length) {
+                latlngRings.push(coords.map(c => [c[0], c[1]]));
+            }
+        }
+        if (!latlngRings.length) return null;
+        const layer = L.polygon(latlngRings, {
+            color: "#7c3aed",
+            weight: 2,
+            fillColor: "#c4b5fd",
+            fillOpacity: 0.18
+        });
+        layer.bindPopup(popupContent);
+        return layer;
+    }
+
+    return null;
+}
+
+function buildKMLLayerFromText(text, layerColor = KML_LAYER_COLORS[0]) {
+    const xml = new DOMParser().parseFromString(text, "application/xml");
+    if (xml.querySelector("parsererror")) {
+        throw new Error("KML invalide");
+    }
+
+    const placemarks = Array.from(xml.getElementsByTagName("Placemark"));
+    if (!placemarks.length) {
+        throw new Error("Aucun Placemark trouvé dans ce KML.");
+    }
+
+    function makeStyle(geometryType) {
+        const color = layerColor || KML_LAYER_COLORS[0];
+        if (geometryType === "point") {
+            return {
+                radius: 6,
+                color: color,
+                weight: 2,
+                fillColor: color,
+                fillOpacity: 0.35
+            };
+        }
+        if (geometryType === "line") {
+            return {
+                color: color,
+                weight: 3,
+                opacity: 0.9
+            };
+        }
+        return {
+            color: color,
+            weight: 2,
+            fillColor: color,
+            fillOpacity: 0.18
+        };
+    }
+
+    function convertKMLPlacemarkToLeafletLayer(placemark) {
+        const properties = extractKMLProperties(placemark);
+        const popupContent = buildKMLPopupContent(properties);
+
+        const pointNode = placemark.getElementsByTagName("Point")[0];
+        if (pointNode) {
+            const coords = parseKMLCoordinates(getFirstElementText(pointNode, ["coordinates"]));
+            if (!coords.length) return null;
+            const layer = L.circleMarker([coords[0][0], coords[0][1]], makeStyle("point"));
+            layer.bindPopup(popupContent);
+            return layer;
+        }
+
+        const lineNode = placemark.getElementsByTagName("LineString")[0];
+        if (lineNode) {
+            const coords = parseKMLCoordinates(getFirstElementText(lineNode, ["coordinates"]));
+            if (!coords.length) return null;
+            const layer = L.polyline(coords.map(c => [c[0], c[1]]), makeStyle("line"));
+            layer.bindPopup(popupContent);
+            return layer;
+        }
+
+        const polygonNode = placemark.getElementsByTagName("Polygon")[0];
+        if (polygonNode) {
+            const ringNodes = polygonNode.getElementsByTagName("LinearRing");
+            const latlngRings = [];
+            for (const ringNode of ringNodes) {
+                const coords = parseKMLCoordinates(getFirstElementText(ringNode, ["coordinates"]));
+                if (coords.length) {
+                    latlngRings.push(coords.map(c => [c[0], c[1]]));
+                }
+            }
+            if (!latlngRings.length) return null;
+            const layer = L.polygon(latlngRings, makeStyle("polygon"));
+            layer.bindPopup(popupContent);
+            return layer;
+        }
+
+        return null;
+    }
+
+    const layers = placemarks
+        .map(convertKMLPlacemarkToLeafletLayer)
+        .filter(Boolean);
+
+    if (!layers.length) {
+        throw new Error("Aucune géométrie KML exploitable trouvée.");
+    }
+
+    return {
+        xmlText: text,
+        layerGroup: L.featureGroup(layers)
+    };
+}
+
+function buildKMLLayerRecord(name, xmlText, visible = true) {
+    const color = KML_LAYER_COLORS[kmlLayerIdCounter % KML_LAYER_COLORS.length];
+    const built = buildKMLLayerFromText(xmlText, color);
+    return {
+        id: ++kmlLayerIdCounter,
+        name: name || `Couche KML ${kmlLayerIdCounter}`,
+        xmlText,
+        visible: visible !== false,
+        color,
+        layerGroup: built.layerGroup
+    };
+}
+
+function ensureKMLLayersBuilt() {
+    kmlLayers = kmlLayers.map((item, index) => {
+        const color = item.color || KML_LAYER_COLORS[index % KML_LAYER_COLORS.length];
+        if (item.layerGroup) return { ...item, color };
+        const built = buildKMLLayerFromText(item.xmlText, color);
+        return { ...item, color, layerGroup: built.layerGroup };
+    });
+}
+
+function refreshKMLLayersOnMap() {
+    if (!map) return;
+
+    kmlLayers.forEach(item => {
+        if (item.layerGroup && map.hasLayer(item.layerGroup)) {
+            map.removeLayer(item.layerGroup);
+        }
+    });
+
+    kmlLayers.forEach(item => {
+        if (item.visible && item.layerGroup) {
+            item.layerGroup.addTo(map);
+        }
+    });
+
+    if (featuresLayer) featuresLayer.eachLayer(layer => layer.bringToFront && layer.bringToFront());
+    if (landmarkMarkersLayer) landmarkMarkersLayer.eachLayer(layer => layer.bringToFront && layer.bringToFront());
+    if (userMarker && userMarker.setZIndexOffset) userMarker.setZIndexOffset(1200);
+}
+
+function renderKMLList() {
+    const list = document.getElementById("kmlList");
+    if (!list) return;
+
+    if (!kmlLayers.length) {
+        list.innerHTML = '<div id="kmlEmpty">Aucune couche KML chargée pour le moment.</div>';
+        return;
+    }
+
+    list.innerHTML = kmlLayers.map((item, index) => `
+        <div class="kml-card">
+            <div class="kml-card-title-row">
+                <span class="kml-color-dot" style="background:${escapeHtml(item.color || KML_LAYER_COLORS[0])};"></span>
+                <div class="kml-card-title">${escapeHtml(item.name)}</div>
+            </div>
+            <div class="kml-card-meta">
+                Couche ${index + 1} / ${kmlLayers.length}<br>
+                Visibilité : ${item.visible ? "affichée" : "masquée"}
+            </div>
+            <div class="kml-card-actions">
+                <button class="secondary" onclick="toggleKMLLayerVisibility(${item.id})">${item.visible ? "👁 Masquer" : "👁 Afficher"}</button>
+                <button class="secondary" onclick="moveKMLLayerUp(${item.id})" ${index === 0 ? "disabled" : ""}>↑ Monter</button>
+                <button class="secondary" onclick="moveKMLLayerDown(${item.id})" ${index === kmlLayers.length - 1 ? "disabled" : ""}>↓ Descendre</button>
+                <button class="danger" onclick="removeKMLLayer(${item.id})">🗑 Supprimer</button>
+            </div>
+        </div>
+    `).join("");
+}
+
+function updateKMLUI() {
+    renderKMLList();
+}
+
+function openKMLPicker() {
+    document.getElementById("kmlFileInput")?.click();
+}
+
+function openKMLPickerAndCloseMenu() {
+    closeMenu();
+    openKMLPicker();
+}
+
+function openKMLPanel() {
+    closeMenu();
+    closePointsList();
+    closeLandmarksPanel();
+    closeForm();
+    closeNavigation();
+    renderKMLList();
+    document.getElementById("kmlPanel").classList.add("open");
+    document.getElementById("kmlBackdrop").classList.add("open");
+}
+
+function closeKMLPanel() {
+    document.getElementById("kmlPanel").classList.remove("open");
+    document.getElementById("kmlBackdrop").classList.remove("open");
+}
+
+function toggleKMLLayerVisibility(id) {
+    const item = kmlLayers.find(layer => layer.id === id);
+    if (!item) return;
+    item.visible = !item.visible;
+    refreshKMLLayersOnMap();
+    saveState();
+    updateKMLUI();
+}
+
+function moveKMLLayerUp(id) {
+    const index = kmlLayers.findIndex(item => item.id === id);
+    if (index <= 0) return;
+    const moved = kmlLayers.splice(index, 1)[0];
+    kmlLayers.splice(index - 1, 0, moved);
+    refreshKMLLayersOnMap();
+    saveState();
+    updateKMLUI();
+}
+
+function moveKMLLayerDown(id) {
+    const index = kmlLayers.findIndex(item => item.id === id);
+    if (index === -1 || index >= kmlLayers.length - 1) return;
+    const moved = kmlLayers.splice(index, 1)[0];
+    kmlLayers.splice(index + 1, 0, moved);
+    refreshKMLLayersOnMap();
+    saveState();
+    updateKMLUI();
+}
+
+function removeKMLLayer(id) {
+    const item = kmlLayers.find(layer => layer.id === id);
+    if (!item) return;
+    if (!confirm(`Supprimer la couche KML "${item.name}" ?`)) return;
+    if (map && item.layerGroup && map.hasLayer(item.layerGroup)) {
+        map.removeLayer(item.layerGroup);
+    }
+    kmlLayers = kmlLayers.filter(layer => layer.id !== id);
+    saveState();
+    updateKMLUI();
+}
+
+function importKML(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            let text = e.target.result;
+            if (typeof text !== "string") text = String(text || "");
+
+            const record = buildKMLLayerRecord(file.name || "Couche KML", text, true);
+            kmlLayers.unshift(record);
+            refreshKMLLayersOnMap();
+
+            const bounds = record.layerGroup.getBounds();
+            if (bounds && bounds.isValid()) {
+                map.fitBounds(bounds, { padding: [30, 30] });
+            }
+
+            saveState();
+            updateKMLUI();
+            openKMLPanel();
+            alert("KML importé avec succès.");
+        } catch (err) {
+            console.error(err);
+            alert("Impossible de lire ce fichier KML.");
+        }
+
+        event.target.value = "";
+    };
+
+    reader.onerror = function() {
+        alert("Impossible de lire ce fichier KML.");
+        event.target.value = "";
+    };
+
+    reader.readAsText(file);
+}
+
+
+function updateGPSInfo(text) {
+    document.getElementById("gpsInfo").innerHTML = text;
+}
+
+function updateFeatureCount() {
+    document.getElementById("featureCount").textContent = geojson.features.length;
+}
+
+function setPointModeInfo(text = "") {
+    document.getElementById("pointModeInfo").innerHTML = text;
+}
+
+function updateNetworkStatus() {
+    const el = document.getElementById("networkStatus");
+    if (!el) return;
+
+    if (navigator.onLine) {
+        el.textContent = "en ligne";
+        el.className = "network-online";
+    } else {
+        el.textContent = "hors ligne";
+        el.className = "network-offline";
+    }
+}
+
+function getBasemapLabel(key) {
+    const labels = {
+        osm: "OSM",
+        ignPlan: "IGN Plan",
+        ignOrtho: "IGN Orthophotos"
+    };
+    return labels[key] || key;
+}
+
+function updateBasemapLabel() {
+    const select = document.getElementById("basemapSelect");
+    if (select) select.value = currentBasemapKey;
+}
+
+function updateUsernameUI() {
+    const input = document.getElementById("usernameInput");
+    if (input) input.value = currentUsername || "";
+}
+
+function updateGPSMenuButton() {
+    const btn = document.getElementById("gpsToggleBtn");
+    if (!btn) return;
+
+    if (watchId !== null) {
+        btn.textContent = "🛑 Stop GPS";
+        btn.className = "secondary";
+    } else {
+        btn.textContent = "📍 Démarrer GPS";
+        btn.className = "";
+    }
+}
+
+function formatDateParts(dateObj) {
+    const pad = n => String(n).padStart(2, "0");
+    return {
+        date: `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}`,
+        time: `${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}:${pad(dateObj.getSeconds())}`
+    };
+}
+
+function buildHiddenPointMetadata(coords, existingProperties = null) {
+    const meta = {};
+    const hasExisting = existingProperties && typeof existingProperties === "object";
+
+    if (hasExisting && Object.prototype.hasOwnProperty.call(existingProperties, "_utilisateur")) {
+        meta._utilisateur = existingProperties._utilisateur;
+    } else {
+        meta._utilisateur = currentUsername && currentUsername.trim() !== "" ? currentUsername.trim() : "";
+    }
+
+    if (hasExisting && Object.prototype.hasOwnProperty.call(existingProperties, "_latitude")) {
+        meta._latitude = existingProperties._latitude;
+    } else {
+        meta._latitude = Number.isFinite(coords?.lat) ? Number(coords.lat) : null;
+    }
+
+    if (hasExisting && Object.prototype.hasOwnProperty.call(existingProperties, "_longitude")) {
+        meta._longitude = existingProperties._longitude;
+    } else {
+        meta._longitude = Number.isFinite(coords?.lng) ? Number(coords.lng) : null;
+    }
+
+    if (hasExisting && Object.prototype.hasOwnProperty.call(existingProperties, "_altitude")) {
+        meta._altitude = existingProperties._altitude;
+    } else {
+        meta._altitude = Number.isFinite(coords?.altitude) ? Number(coords.altitude) : null;
+    }
+
+    if (hasExisting && Object.prototype.hasOwnProperty.call(existingProperties, "_date_creation")) {
+        meta._date_creation = existingProperties._date_creation;
+    } else {
+        const now = formatDateParts(new Date());
+        meta._date_creation = now.date;
+    }
+
+    if (hasExisting && Object.prototype.hasOwnProperty.call(existingProperties, "_heure_creation")) {
+        meta._heure_creation = existingProperties._heure_creation;
+    } else {
+        const now = formatDateParts(new Date());
+        meta._heure_creation = now.time;
+    }
+
+    if (hasExisting && Object.prototype.hasOwnProperty.call(existingProperties, "_photo")) {
+        meta._photo = existingProperties._photo;
+    } else {
+        meta._photo = null;
+    }
+
+    return meta;
+}
+
+
+function getLabelFieldName() {
+    const field = fields.find(item => item && item.isLabel);
+    return field ? field.name : "";
+}
+
+function enforceSingleLabelCheckbox(changedCheckbox) {
+    const allLabelCheckboxes = document.querySelectorAll(".field-label-checkbox");
+    allLabelCheckboxes.forEach(cb => {
+        if (cb !== changedCheckbox) {
+            cb.checked = false;
+        }
+    });
+}
+
+function fieldUsesDropdown(field) {
+    return field &&
+        field.type !== "bool" &&
+        field.useSuggestions &&
+        Array.isArray(field.suggestions) &&
+        field.suggestions.length > 0;
+}
+
+function enterApp() {
+    const input = document.getElementById("usernameInput");
+    const username = input ? input.value.trim() : "";
+
+    currentUsername = username;
+    saveState();
+    updateUsernameUI();
+
+    document.getElementById("homePage").style.display = "none";
+
+    const configStarted = localStorage.getItem(STORAGE_KEYS.configStarted) === "true";
+
+    if (configStarted) {
+        document.getElementById("configPage").style.display = "none";
+        document.getElementById("mapPage").style.display = "block";
+        initMap();
+    } else {
+        document.getElementById("configPage").style.display = "block";
+        document.getElementById("mapPage").style.display = "none";
+    }
+}
+
+function closeForm() {
+    editingFeatureIndex = null;
+    pendingPointCoords = null;
+    currentPhotoData = null;
+    document.getElementById("dynamicForm").innerHTML = "";
+    document.getElementById("formPopup").style.display = "none";
+    document.getElementById("formTitle").textContent = "Nouveau point";
+    document.getElementById("deleteBtn").classList.add("hidden");
+    setPointModeInfo("");
+    updatePhotoUI();
+}
+
+function formatValueForDisplay(value) {
+    if (value === null || value === undefined || value === "") return "(vide)";
+    if (typeof value === "boolean") return value ? "Oui" : "Non";
+    return String(value);
+}
+
+function buildPopupContent(properties, featureIndex) {
+    const entries = Object.entries(properties || {})
+        .filter(([key]) => !String(key).startsWith("_"));
+
+    const content = entries.length === 0
+        ? "<b>Point</b>"
+        : entries
+            .map(([key, value]) => `<b>${escapeHtml(key)}</b> : ${escapeHtml(formatValueForDisplay(value))}`)
+            .join("<br>");
+
+    const photoHtml = properties && properties._photo
+        ? `<div style="margin-top:10px;"><img src="${properties._photo}" alt="Photo du point" style="display:block;max-width:220px;max-height:180px;border-radius:8px;"></div>`
+        : "";
+
+    return `
+        <div>
+            ${content}
+            ${photoHtml}
+            <div class="popup-actions">
+                <button class="secondary" onclick="navigateToPoint(${featureIndex})">🧭 Aller</button>
+                <button class="warning" onclick="editPoint(${featureIndex})">✏️ Modifier</button>
+                <button class="secondary" onclick="startMovePoint(${featureIndex})">📍 Déplacer</button>
+                <button class="danger" onclick="deletePoint(${featureIndex})">🗑 Supprimer</button>
+            </div>
+        </div>
+    `;
+}
+
+function sanitizeImportedFeature(feature) {
+    if (!feature || feature.type !== "Feature") return null;
+    if (!feature.geometry || feature.geometry.type !== "Point") return null;
+    if (!Array.isArray(feature.geometry.coordinates) || feature.geometry.coordinates.length < 2) return null;
+
+    const lng = Number(feature.geometry.coordinates[0]);
+    const lat = Number(feature.geometry.coordinates[1]);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+
+    return {
+        type: "Feature",
+        geometry: {
+            type: "Point",
+            coordinates: [lng, lat]
+        },
+        properties: (feature.properties && typeof feature.properties === "object")
+            ? {
+                ...feature.properties,
+                _photo: (typeof feature.properties._photo === "string" && feature.properties._photo.startsWith("data:image/"))
+                    ? feature.properties._photo
+                    : (feature.properties._photo === null ? null : null)
+            }
+            : {}
+    };
+}
+
+function getTimestampForFilename() {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, "0");
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+}
+
+function normalizeSuggestions(type, rawSuggestions) {
+    const allowedTypes = ["text", "int", "float"];
+    if (!allowedTypes.includes(type)) return [];
+
+    const values = rawSuggestions
+        .split(";")
+        .map(v => v.trim())
+        .filter(v => v !== "");
+
+    if (type === "int") {
+        return values.filter(v => !Number.isNaN(parseInt(v, 10)));
+    }
+
+    if (type === "float") {
+        return values.filter(v => !Number.isNaN(parseFloat(v)));
+    }
+
+    return values;
+}
+
+function resetSelectedPoints() {
+    selectedPointIndexes = new Set();
+    updateSelectionInfo();
+}
+
+function updateSelectionInfo() {
+    const count = selectedPointIndexes.size;
+    const el = document.getElementById("selectionInfo");
+    if (el) {
+        el.textContent = `${count} point${count > 1 ? "s" : ""} sélectionné${count > 1 ? "s" : ""}`;
+    }
+    updatePointsSelectionActions();
+}
+
+function getSingleSelectedPointIndex() {
+    if (selectedPointIndexes.size !== 1) return null;
+    return Array.from(selectedPointIndexes)[0];
+}
+
+function updatePointsSelectionActions() {
+    const singleActions = document.getElementById("pointsSingleSelectionActions");
+    const multiActions = document.getElementById("pointsMultiSelectionActions");
+    const hint = document.getElementById("pointsSelectionHint");
+    if (!singleActions || !multiActions || !hint) return;
+
+    const count = selectedPointIndexes.size;
+    const singleIndex = getSingleSelectedPointIndex();
+    const hasSingle = singleIndex !== null && geojson.features[singleIndex];
+
+    singleActions.style.display = hasSingle ? "flex" : "none";
+
+    if (count === 0) {
+        multiActions.style.display = "none";
+        multiActions.innerHTML = "";
+        hint.textContent = "Sélectionnez un ou plusieurs points pour afficher les actions adaptées.";
+        return;
+    }
+
+    multiActions.style.display = "flex";
+
+    if (hasSingle) {
+        multiActions.innerHTML = '<button class="danger" onclick="deleteSelectedPoints()">🗑 Supprimer la sélection</button>';
+        hint.textContent = `Point ${singleIndex + 1} sélectionné : zoom, modification ou suppression de la sélection.`;
+    } else {
+        multiActions.innerHTML = `
+            <button class="warning" onclick="exportSelectedPoints()">📤 Exporter la sélection</button>
+            <button class="danger" onclick="deleteSelectedPoints()">🗑 Supprimer la sélection</button>
+        `;
+        hint.textContent = `${count} points sélectionnés : export ou suppression de la sélection.`;
+    }
+}
+
+function zoomToSelectedPoint() {
+    const index = getSingleSelectedPointIndex();
+    if (index === null) return;
+    zoomToPoint(index);
+}
+
+function editSelectedPoint() {
+    const index = getSingleSelectedPointIndex();
+    if (index === null) return;
+    editPointFromList(index);
+}
+
+function deleteSelectedPoints() {
+    const indexes = Array.from(selectedPointIndexes).sort((a, b) => b - a);
+    if (!indexes.length) return;
+
+    const message = indexes.length === 1
+        ? `Supprimer le point ${indexes[0] + 1} ?`
+        : `Supprimer les ${indexes.length} points sélectionnés ?`;
+
+    if (!confirm(message)) return;
+
+    if (indexes.length === 1) {
+        deletePointFromList(indexes[0]);
+        return;
+    }
+
+    const indexSet = new Set(indexes);
+
+    if (movingFeatureIndex !== null && indexSet.has(movingFeatureIndex)) {
+        clearMoveState();
+    }
+
+    closeNavigation();
+
+    geojson.features = geojson.features.filter((_, index) => !indexSet.has(index));
+    selectedPointIndexes = new Set();
+
+    saveState();
+    renderFeatures();
+    renderPointsList();
+    updateFeatureCount();
+}
+
+function normalizeSelectedIndexesAfterMutation() {
+    const maxIndex = geojson.features.length - 1;
+    const cleaned = new Set();
+
+    selectedPointIndexes.forEach(index => {
+        if (Number.isInteger(index) && index >= 0 && index <= maxIndex) {
+            cleaned.add(index);
+        }
+    });
+
+    selectedPointIndexes = cleaned;
+    updateSelectionInfo();
+}
+
+
+function resetLandmarkForm() {
+    editingLandmarkId = null;
+    const title = document.getElementById("landmarkFormTitle");
+    const nameInput = document.getElementById("landmarkNameInput");
+    const latInput = document.getElementById("landmarkLatInput");
+    const lngInput = document.getElementById("landmarkLngInput");
+
+    if (title) title.textContent = "Nouveau repère";
+    if (nameInput) nameInput.value = "";
+    if (latInput) latInput.value = "";
+    if (lngInput) lngInput.value = "";
+}
+
+function fillLandmarkForm(landmark) {
+    if (!landmark) return;
+    editingLandmarkId = landmark.id;
+    const title = document.getElementById("landmarkFormTitle");
+    const nameInput = document.getElementById("landmarkNameInput");
+    const latInput = document.getElementById("landmarkLatInput");
+    const lngInput = document.getElementById("landmarkLngInput");
+
+    if (title) title.textContent = "Modifier le repère";
+    if (nameInput) nameInput.value = landmark.name;
+    if (latInput) latInput.value = landmark.lat;
+    if (lngInput) lngInput.value = landmark.lng;
+}
+
+function getSelectedLandmarks() {
+    return landmarks.filter(item => selectedLandmarkIds.has(item.id));
+}
+
+function getSingleSelectedLandmark() {
+    const selected = getSelectedLandmarks();
+    if (selected.length !== 1) return null;
+    return selected[0];
+}
+
+function updateLandmarkSelectionInfo() {
+    const count = selectedLandmarkIds.size;
+    const el = document.getElementById("selectionInfoLandmarks");
+    if (!el) return;
+    el.textContent = `${count} repère${count > 1 ? "s" : ""} sélectionné${count > 1 ? "s" : ""}`;
+}
+
+function normalizeSelectedLandmarks() {
+    const validIds = new Set(landmarks.map(item => item.id));
+    selectedLandmarkIds = new Set(Array.from(selectedLandmarkIds).filter(id => validIds.has(id)));
+    if (lastSelectedLandmarkId && !validIds.has(lastSelectedLandmarkId)) {
+        lastSelectedLandmarkId = null;
+    }
+    updateLandmarkSelectionInfo();
+}
+
+function selectLandmark(id, options = {}) {
+    const landmark = getLandmarkById(id);
+    if (!landmark) return;
+
+    if (options.toggle) {
+        if (selectedLandmarkIds.has(id)) {
+            selectedLandmarkIds.delete(id);
+            if (lastSelectedLandmarkId === id) lastSelectedLandmarkId = null;
+        } else {
+            selectedLandmarkIds.add(id);
+            lastSelectedLandmarkId = id;
+        }
+    } else {
+        selectedLandmarkIds = new Set([id]);
+        lastSelectedLandmarkId = id;
+    }
+
+    renderLandmarks();
+    updateLandmarkSelectionActions();
+    updateLandmarkSelectionInfo();
+    if (options.zoom && map) {
+        map.setView([landmark.lat, landmark.lng], 19);
+    }
+}
+
+function toggleLandmarkSelection(id, isChecked) {
+    selectLandmark(id, { toggle: true });
+}
+
+function clearLandmarkSelection() {
+    selectedLandmarkIds = new Set();
+    lastSelectedLandmarkId = null;
+    renderLandmarks();
+    updateLandmarkSelectionActions();
+    updateLandmarkSelectionInfo();
+}
+
+function toggleSelectAllLandmarks() {
+    if (landmarks.length === 0) {
+        clearLandmarkSelection();
+        return;
+    }
+
+    if (selectedLandmarkIds.size === landmarks.length) {
+        selectedLandmarkIds = new Set();
+        lastSelectedLandmarkId = null;
+    } else {
+        selectedLandmarkIds = new Set(landmarks.map(item => item.id));
+        lastSelectedLandmarkId = landmarks[0]?.id || null;
+    }
+
+    renderLandmarks();
+    updateLandmarkSelectionActions();
+    updateLandmarkSelectionInfo();
+}
+
+function updateLandmarkSelectionActions() {
+    const singleActions = document.getElementById("landmarkSingleSelectionActions");
+    const multiActions = document.getElementById("landmarkMultiSelectionActions");
+    const hint = document.getElementById("landmarkSelectionHint");
+    if (!singleActions || !multiActions || !hint) return;
+
+    const count = selectedLandmarkIds.size;
+    const landmark = getSingleSelectedLandmark();
+
+    singleActions.style.display = landmark ? "flex" : "none";
+
+    if (count === 0) {
+        multiActions.style.display = "none";
+        multiActions.innerHTML = "";
+        hint.textContent = "Clique sur une ligne pour une sélection unique, ou utilise les cases pour une sélection multiple.";
+        return;
+    }
+
+    multiActions.style.display = "flex";
+
+    if (count === 1 && landmark) {
+        multiActions.innerHTML = '<button class="danger" onclick="deleteSelectedLandmarks()">🗑 Supprimer la sélection</button>';
+        hint.textContent = `Repère sélectionné : « ${landmark.name} » — zoom, modification ou suppression de la sélection.`;
+    } else {
+        multiActions.innerHTML = `
+            <button class="warning" onclick="exportSelectedLandmarksToGPX()">📤 Exporter la sélection</button>
+            <button class="danger" onclick="deleteSelectedLandmarks()">🗑 Supprimer la sélection</button>
+        `;
+        hint.textContent = `${count} repères sélectionnés : export ou suppression de la sélection.`;
+    }
+}
+
+function zoomToSelectedLandmark() {
+    const landmark = getSingleSelectedLandmark();
+    if (!landmark) return;
+    zoomToLandmark(landmark.id);
+}
+
+function editSelectedLandmark() {
+    const landmark = getSingleSelectedLandmark();
+    if (!landmark) return;
+    editLandmark(landmark.id);
+}
+
+function deleteSelectedLandmarks() {
+    const selected = getSelectedLandmarks();
+    if (!selected.length) return;
+    const message = selected.length === 1
+        ? `Supprimer le repère "${selected[0].name}" ?`
+        : `Supprimer les ${selected.length} repères sélectionnés ?`;
+    if (!confirm(message)) return;
+
+    const ids = new Set(selected.map(item => item.id));
+    landmarks = landmarks.filter(item => !ids.has(item.id));
+
+    if (editingLandmarkId && ids.has(editingLandmarkId)) resetLandmarkForm();
+    if (movingLandmarkId && ids.has(movingLandmarkId)) clearMoveState();
+    if (navigationTarget && navigationTarget.type === "landmark" && ids.has(navigationTarget.id)) closeNavigation();
+
+    selectedLandmarkIds = new Set();
+    lastSelectedLandmarkId = null;
+    saveState();
+    renderLandmarks();
+}
+
+function exportSelectedLandmarksToGPX() {
+    const selected = getSelectedLandmarks();
+    if (!selected.length) {
+        alert("Aucun repère sélectionné.");
+        return;
+    }
+
+    const waypoints = selected.map(landmark => `
+  <wpt lat="${landmark.lat}" lon="${landmark.lng}">
+    <name>${escapeXml(landmark.name)}</name>
+    <desc>${escapeXml(`Repère exporté depuis App carto terrain le ${formatLandmarkDate(landmark.createdAt)}`)}</desc>
+  </wpt>`).join("");
+
+    const gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="App carto terrain V3.8" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>Repères carto terrain - sélection</name>
+    <time>${new Date().toISOString()}</time>
+  </metadata>${waypoints}
+</gpx>`;
+
+    downloadTextFile(gpx, `reperes_selection_${getTimestampForFilename()}.gpx`, "application/gpx+xml;charset=utf-8");
+}
+
+function renderLandmarks() {
+    const list = document.getElementById("landmarksList");
+
+    if (list) {
+        if (!landmarks.length) {
+            list.innerHTML = '<div id="landmarksEmpty">Aucun repère enregistré pour le moment.</div>';
+        } else {
+            list.innerHTML = landmarks.map(landmark => `
+                <div class="landmark-card ${selectedLandmarkIds.has(landmark.id) ? 'selected' : ''}" onclick="selectLandmark('${landmark.id}')">
+                    <div class="landmark-card-header">
+                        <div class="landmark-card-header-left">
+                            <input class="landmark-checkbox" type="checkbox" ${selectedLandmarkIds.has(landmark.id) ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleLandmarkSelection('${landmark.id}', this.checked)">
+                            <div class="landmark-card-title">${escapeHtml(landmark.name)}</div>
+                        </div>
+                    </div>
+                    <div class="landmark-card-coords">
+                        Lat : ${landmark.lat.toFixed(6)}<br>
+                        Lng : ${landmark.lng.toFixed(6)}
+                    </div>
+                    <div class="landmark-card-meta">Créé : ${escapeHtml(formatLandmarkDate(landmark.createdAt))}</div>
+                </div>
+            `).join("");
+        }
+    }
+
+    if (!map || !landmarkMarkersLayer) return;
+
+    landmarkMarkersLayer.clearLayers();
+    landmarkMarkersById = new Map();
+    landmarks.forEach(landmark => {
+        const marker = L.marker([landmark.lat, landmark.lng], {
+            icon: createLandmarkIcon(),
+            draggable: true
+        }).addTo(landmarkMarkersLayer);
+
+        if (marker.dragging) {
+            marker.dragging.disable();
+        }
+
+        landmarkMarkersById.set(landmark.id, marker);
+
+        marker.bindPopup(`
+            <div>
+                <b>${escapeHtml(landmark.name)}</b><br>
+                Lat : ${landmark.lat.toFixed(6)}<br>
+                Lng : ${landmark.lng.toFixed(6)}
+                <div class="popup-actions">
+                    <button class="secondary" onclick="navigateToLandmark('${landmark.id}')">🧭 Aller</button>
+                    <button class="secondary" onclick="startMoveLandmark('${landmark.id}')">📍 Déplacer</button>
+                    <button class="warning" onclick="editLandmark('${landmark.id}')">✏️ Modifier</button>
+                    <button class="danger" onclick="deleteLandmark('${landmark.id}')">🗑 Supprimer</button>
+                </div>
+            </div>
+        `);
+    });
+
+    normalizeSelectedLandmarks();
+    updateLandmarkSelectionActions();
+}
+
+function onMovingLandmarkDrag(e) {
+    const ll = e.target.getLatLng();
+    movingLandmarkCurrentCoords = { lat: ll.lat, lng: ll.lng };
+    updateMovePanel();
+}
+
+function onMovingLandmarkDragEnd(e) {
+    const ll = e.target.getLatLng();
+    movingLandmarkCurrentCoords = { lat: ll.lat, lng: ll.lng };
+    updateMovePanel();
+}
+
+function startMoveLandmark(id) {
+    const landmark = getLandmarkById(id);
+    const marker = landmarkMarkersById.get(id);
+
+    if (!landmark || !marker) return;
+
+    closeMenu();
+    closePointsList();
+    closeLandmarksPanel();
+    closeForm();
+    closeNavigation();
+
+    if (movingFeatureIndex !== null || movingLandmarkId !== null) {
+        cancelMovePoint();
+    }
+
+    movingLandmarkId = id;
+    movingLandmarkOriginalCoords = { lat: landmark.lat, lng: landmark.lng };
+    movingLandmarkCurrentCoords = { lat: landmark.lat, lng: landmark.lng };
+    movingLandmarkMarker = marker;
+
+    marker.closePopup();
+
+    if (marker.dragging) {
+        marker.dragging.enable();
+    }
+
+    marker.off("drag", onMovingLandmarkDrag);
+    marker.off("dragend", onMovingLandmarkDragEnd);
+    marker.on("drag", onMovingLandmarkDrag);
+    marker.on("dragend", onMovingLandmarkDragEnd);
+
+    updateMovePanel();
+}
+
+function openLandmarksPanel() {
+    closeMenu();
+    closePointsList();
+    closeLandmarksPanel();
+    closeForm();
+    closeNavigation();
+    const panel = document.getElementById("landmarksPanel");
+    const backdrop = document.getElementById("landmarksBackdrop");
+    if (!panel || !backdrop) {
+        alert("Panneau des repères introuvable.");
+        return;
+    }
+    renderLandmarks();
+    updateLandmarkSelectionActions();
+    panel.classList.add("open");
+    backdrop.classList.add("open");
+}
+
+function closeLandmarksPanel() {
+    const panel = document.getElementById("landmarksPanel");
+    const backdrop = document.getElementById("landmarksBackdrop");
+    if (panel) panel.classList.remove("open");
+    if (backdrop) backdrop.classList.remove("open");
+}
+
+function saveLandmark() {
+    const name = String(document.getElementById("landmarkNameInput")?.value ?? "").trim();
+    const lat = Number(document.getElementById("landmarkLatInput")?.value);
+    const lng = Number(document.getElementById("landmarkLngInput")?.value);
+
+    if (!name) return alert("Le nom du repère est obligatoire.");
+    if (!Number.isFinite(lat) || lat < -90 || lat > 90) return alert("La latitude doit être comprise entre -90 et 90.");
+    if (!Number.isFinite(lng) || lng < -180 || lng > 180) return alert("La longitude doit être comprise entre -180 et 180.");
+
+    const existing = editingLandmarkId ? getLandmarkById(editingLandmarkId) : null;
+    const landmark = sanitizeLandmark({
+        id: existing ? existing.id : `repere_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        name, lat, lng,
+        createdAt: existing ? existing.createdAt : new Date().toISOString()
+    });
+
+    if (!landmark) return alert("Repère invalide.");
+
+    if (existing) {
+        landmarks = landmarks.map(item => item.id === existing.id ? landmark : item);
+    } else {
+        landmarks.push(landmark);
+    }
+
+    selectedLandmarkIds = new Set([landmark.id]);
+    lastSelectedLandmarkId = landmark.id;
+    saveState();
+    renderLandmarks();
+    resetLandmarkForm();
+}
+
+function editLandmark(id) {
+    const landmark = getLandmarkById(id);
+    if (!landmark) return;
+    if (!document.getElementById("landmarksPanel")?.classList.contains("open")) {
+        openLandmarksPanel();
+    }
+    selectedLandmarkIds = new Set([id]);
+    lastSelectedLandmarkId = id;
+    fillLandmarkForm(landmark);
+    renderLandmarks();
+}
+
+function deleteLandmark(id) {
+    const landmark = getLandmarkById(id);
+    if (!landmark) return;
+    if (!confirm(`Supprimer le repère "${landmark.name}" ?`)) return;
+
+    landmarks = landmarks.filter(item => item.id !== id);
+    if (editingLandmarkId === id) resetLandmarkForm();
+    if (movingLandmarkId === id) {
+        clearMoveState();
+    }
+    if (navigationTarget && navigationTarget.type === "landmark" && navigationTarget.id === id) closeNavigation();
+    saveState();
+    renderLandmarks();
+}
+
+function clearAllLandmarks() {
+    if (!landmarks.length) return alert("Aucun repère à supprimer.");
+    if (!confirm("Supprimer tous les repères ?")) return;
+
+    landmarks = [];
+    selectedLandmarkIds = new Set();
+    lastSelectedLandmarkId = null;
+    if (movingLandmarkId !== null) {
+        clearMoveState();
+    }
+    if (editingLandmarkId) resetLandmarkForm();
+    if (navigationTarget && navigationTarget.type === "landmark") closeNavigation();
+    saveState();
+    renderLandmarks();
+}
+
+function zoomToLandmark(id) {
+    const landmark = getLandmarkById(id);
+    if (!landmark || !map) return;
+    closeLandmarksPanel();
+    map.setView([landmark.lat, landmark.lng], 19);
+}
+
+function navigateToLandmark(id) {
+    const landmark = getLandmarkById(id);
+    if (!landmark || !map) return;
+
+    if (movingFeatureIndex !== null) cancelMovePoint();
+
+    closeMenu();
+    closePointsList();
+    closeLandmarksPanel();
+    closeForm();
+
+    navigationTarget = { type: "landmark", id: landmark.id, lat: landmark.lat, lng: landmark.lng };
+    resetNavigationUI();
+    document.getElementById("navCoords").textContent = `Point cible : ${landmark.lat.toFixed(6)}, ${landmark.lng.toFixed(6)}`;
+    document.getElementById("navigationPanel").classList.add("open");
+
+    if (currentPos) {
+        map.fitBounds([[landmark.lat, landmark.lng],[currentPos.lat, currentPos.lng]], { padding: [50, 50] });
+    } else {
+        map.setView([landmark.lat, landmark.lng], 18);
+    }
+
+    startNavigation();
+}
+
+function useCurrentPositionForLandmark() {
+    if (!currentPos) {
+        alert("Aucune position GPS disponible. Autorisez la localisation puis réessayez.");
+        return;
+    }
+    const latInput = document.getElementById("landmarkLatInput");
+    const lngInput = document.getElementById("landmarkLngInput");
+    if (latInput) latInput.value = currentPos.lat.toFixed(6);
+    if (lngInput) lngInput.value = currentPos.lng.toFixed(6);
+}
+
+function openLandmarksImportFilePicker() {
+    document.getElementById("landmarksImportFile")?.click();
+}
+
+function exportLandmarksToGPX() {
+    if (!landmarks.length) return alert("Aucun repère à exporter.");
+
+    const waypoints = landmarks.map(landmark => `
+  <wpt lat="${landmark.lat}" lon="${landmark.lng}">
+    <name>${escapeXml(landmark.name)}</name>
+    <desc>${escapeXml(`Repère exporté depuis App carto terrain le ${formatLandmarkDate(landmark.createdAt)}`)}</desc>
+  </wpt>`).join("");
+
+    const gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="App carto terrain V3.8.3" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>Repères carto terrain</name>
+    <time>${new Date().toISOString()}</time>
+  </metadata>${waypoints}
+</gpx>`;
+
+    downloadTextFile(gpx, `reperes_${getTimestampForFilename()}.gpx`, "application/gpx+xml;charset=utf-8");
+}
+
+function importLandmarksGPX(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const text = typeof e.target.result === "string" ? e.target.result : String(e.target.result || "");
+            const xml = new DOMParser().parseFromString(text, "application/xml");
+            if (xml.querySelector("parsererror")) throw new Error("XML invalide");
+
+            let nodes = Array.from(xml.getElementsByTagName("wpt"));
+            if (!nodes.length) nodes = Array.from(xml.getElementsByTagName("rtept"));
+            if (!nodes.length) nodes = Array.from(xml.getElementsByTagName("trkpt"));
+
+            const imported = nodes.map((node, index) => {
+                const lat = Number(node.getAttribute("lat"));
+                const lng = Number(node.getAttribute("lon"));
+                const nameNode = node.getElementsByTagName("name")[0];
+                const descNode = node.getElementsByTagName("desc")[0];
+                return sanitizeLandmark({
+                    id: `repere_${Date.now()}_${index}_${Math.random().toString(36).slice(2, 8)}`,
+                    name: (nameNode?.textContent || descNode?.textContent || `Repère ${index + 1}`).trim(),
+                    lat,
+                    lng,
+                    createdAt: new Date().toISOString()
+                });
+            }).filter(Boolean);
+
+            if (!imported.length) {
+                alert("Aucun repère valide trouvé dans ce GPX.");
+                event.target.value = "";
+                return;
+            }
+
+            const existingKeys = new Set(
+                landmarks.map(item => `${item.name.trim().toLowerCase()}|${item.lat.toFixed(6)}|${item.lng.toFixed(6)}`)
+            );
+
+            const uniqueImported = [];
+            let skippedDuplicates = 0;
+
+            imported.forEach(item => {
+                const key = `${item.name.trim().toLowerCase()}|${item.lat.toFixed(6)}|${item.lng.toFixed(6)}`;
+                if (existingKeys.has(key)) {
+                    skippedDuplicates += 1;
+                    return;
+                }
+                existingKeys.add(key);
+                uniqueImported.push(item);
+            });
+
+            if (!uniqueImported.length) {
+                alert("Tous les repères du GPX sont déjà présents dans l'application.");
+                event.target.value = "";
+                return;
+            }
+
+            landmarks = landmarks.concat(uniqueImported);
+            saveState();
+            renderLandmarks();
+            openLandmarksPanel();
+
+            let message = `${uniqueImported.length} repère(s) ajouté(s).`;
+            if (skippedDuplicates > 0) {
+                message += ` ${skippedDuplicates} doublon(s) ignoré(s).`;
+            }
+            alert(message);
+        } catch (err) {
+            console.error(err);
+            alert("Impossible de lire le fichier GPX.");
+        }
+        event.target.value = "";
+    };
+
+    reader.onerror = function() {
+        alert("Impossible de lire le fichier GPX.");
+        event.target.value = "";
+    };
+
+    reader.readAsText(file);
+}
+
+/* =========================
+   MENU
+========================= */
+function toggleMenu() {
+    const panel = document.getElementById("menuPanel");
+    const backdrop = document.getElementById("menuBackdrop");
+    const isOpen = panel.classList.contains("open");
+
+    if (isOpen) {
+        closeMenu();
+    } else {
+        closeMenu();
+        closePointsList();
+        panel.classList.add("open");
+        backdrop.classList.add("open");
+        updateGPSMenuButton();
+    }
+}
+
+function closeMenu() {
+    document.getElementById("menuPanel").classList.remove("open");
+    document.getElementById("menuBackdrop").classList.remove("open");
+}
+
+function toggleGPSAndCloseMenu() {
+    closeMenu();
+    toggleGPS();
+}
+
+function toggleGPS() {
+    if (watchId !== null) {
+        stopGPS();
+    } else {
+        startGPS();
+    }
+}
+
+function goBackToConfigAndCloseMenu() {
+    closeMenu();
+    goBackToConfig();
+}
+
+function clearAllDataFromPointsList() {
+    clearAllData();
+}
+
+/* =========================
+   DEPLACEMENT POINT
+========================= */
+function updateMovePanel() {
+    const panel = document.getElementById("movePanel");
+    const info = document.getElementById("moveInfo");
+
+    if (!panel || !info) return;
+
+    if (movingFeatureIndex !== null && movingCurrentCoords) {
+        panel.classList.add("open");
+        info.innerHTML =
+            `<b>Déplacement du point ${movingFeatureIndex + 1}</b><br>` +
+            `Glisse le marqueur puis valide.<br>` +
+            `Lat : <b>${movingCurrentCoords.lat.toFixed(6)}</b> · ` +
+            `Lng : <b>${movingCurrentCoords.lng.toFixed(6)}</b>`;
+        return;
+    }
+
+    if (movingLandmarkId !== null && movingLandmarkCurrentCoords) {
+        const landmark = getLandmarkById(movingLandmarkId);
+        panel.classList.add("open");
+        info.innerHTML =
+            `<b>Déplacement du repère${landmark ? ` : ${escapeHtml(landmark.name)}` : ""}</b><br>` +
+            `Glisse le marqueur rouge puis valide.<br>` +
+            `Lat : <b>${movingLandmarkCurrentCoords.lat.toFixed(6)}</b> · ` +
+            `Lng : <b>${movingLandmarkCurrentCoords.lng.toFixed(6)}</b>`;
+        return;
+    }
+
+    panel.classList.remove("open");
+    info.innerHTML = "";
+}
+
+function clearMoveState() {
+    if (movingMarker) {
+        movingMarker.off("drag", onMovingMarkerDrag);
+        movingMarker.off("dragend", onMovingMarkerDragEnd);
+        if (movingMarker.dragging) {
+            movingMarker.dragging.disable();
+        }
+    }
+
+    if (movingLandmarkMarker) {
+        movingLandmarkMarker.off("drag", onMovingLandmarkDrag);
+        movingLandmarkMarker.off("dragend", onMovingLandmarkDragEnd);
+        if (movingLandmarkMarker.dragging) {
+            movingLandmarkMarker.dragging.disable();
+        }
+    }
+
+    movingFeatureIndex = null;
+    movingOriginalCoords = null;
+    movingCurrentCoords = null;
+    movingMarker = null;
+    movingLandmarkId = null;
+    movingLandmarkOriginalCoords = null;
+    movingLandmarkCurrentCoords = null;
+    movingLandmarkMarker = null;
+    updateMovePanel();
+}
+
+function onMovingMarkerDrag(e) {
+    const ll = e.target.getLatLng();
+    movingCurrentCoords = { lat: ll.lat, lng: ll.lng };
+    updateMovePanel();
+}
+
+function onMovingMarkerDragEnd(e) {
+    const ll = e.target.getLatLng();
+    movingCurrentCoords = { lat: ll.lat, lng: ll.lng };
+    updateMovePanel();
+}
+
+function startMovePoint(index) {
+    const feature = geojson.features[index];
+    const marker = markersByFeatureIndex.get(index);
+
+    if (!feature || !marker || !feature.geometry || !Array.isArray(feature.geometry.coordinates)) return;
+
+    closeMenu();
+    closePointsList();
+    closeLandmarksPanel();
+    closeForm();
+    closeNavigation();
+
+    if (movingFeatureIndex !== null) {
+        cancelMovePoint();
+    }
+
+    const [lng, lat] = feature.geometry.coordinates;
+
+    movingFeatureIndex = index;
+    movingOriginalCoords = { lat, lng };
+    movingCurrentCoords = { lat, lng };
+    movingMarker = marker;
+
+    marker.closePopup();
+
+    if (marker.dragging) {
+        marker.dragging.enable();
+    }
+
+    marker.on("drag", onMovingMarkerDrag);
+    marker.on("dragend", onMovingMarkerDragEnd);
+
+    updateMovePanel();
+}
+
+function confirmMovePoint() {
+    if (movingLandmarkId !== null && movingLandmarkCurrentCoords) {
+        const landmark = getLandmarkById(movingLandmarkId);
+
+        if (!landmark) {
+            clearMoveState();
+            renderLandmarks();
+            return;
+        }
+
+        landmarks = landmarks.map(item => item.id === movingLandmarkId
+            ? { ...item, lat: movingLandmarkCurrentCoords.lat, lng: movingLandmarkCurrentCoords.lng }
+            : item
+        );
+
+        if (editingLandmarkId === movingLandmarkId) {
+            fillLandmarkForm(getLandmarkById(movingLandmarkId));
+        }
+
+        clearMoveState();
+        saveState();
+        renderLandmarks();
+        return;
+    }
+
+    if (movingFeatureIndex === null || !movingCurrentCoords) return;
+
+    const feature = geojson.features[movingFeatureIndex];
+    if (!feature) {
+        clearMoveState();
+        renderFeatures();
+        return;
+    }
+
+    feature.geometry.coordinates = [movingCurrentCoords.lng, movingCurrentCoords.lat];
+
+    if (!feature.properties || typeof feature.properties !== "object") {
+        feature.properties = {};
+    }
+
+    feature.properties._latitude = movingCurrentCoords.lat;
+    feature.properties._longitude = movingCurrentCoords.lng;
+    feature.properties._altitude = null;
+
+    clearMoveState();
+    saveState();
+    renderFeatures();
+    renderPointsList();
+}
+
+function cancelMovePoint() {
+    if (movingLandmarkId !== null) {
+        if (movingLandmarkMarker && movingLandmarkOriginalCoords) {
+            movingLandmarkMarker.setLatLng([movingLandmarkOriginalCoords.lat, movingLandmarkOriginalCoords.lng]);
+        }
+
+        clearMoveState();
+        renderLandmarks();
+        return;
+    }
+
+    if (movingFeatureIndex === null) return;
+
+    if (movingMarker && movingOriginalCoords) {
+        movingMarker.setLatLng([movingOriginalCoords.lat, movingOriginalCoords.lng]);
+    }
+
+    clearMoveState();
+    renderFeatures();
+    renderPointsList();
+}
+
+/* =========================
+   NAVIGATION POINT
+========================= */
+function resetNavigationUI() {
+    const distance = document.getElementById("navDistance");
+    const accuracy = document.getElementById("navAccuracy");
+    const coords = document.getElementById("navCoords");
+    const info = document.getElementById("navInfo");
+
+    if (distance) distance.textContent = "Distance : —";
+    if (accuracy) accuracy.textContent = "Précision : —";
+    if (coords) coords.textContent = "Point cible : —";
+    if (info) info.textContent = "Suis la ligne rouge pour atteindre le point.";
+}
+
+function closeNavigation() {
+    document.getElementById("navigationPanel").classList.remove("open");
+
+    if (navigationWatchId !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(navigationWatchId);
+        navigationWatchId = null;
+    }
+
+    if (navigationLine && map) {
+        map.removeLayer(navigationLine);
+        navigationLine = null;
+    }
+
+    navigationTarget = null;
+    resetNavigationUI();
+}
+
+function updateNavigationData(pos) {
+    if (!navigationTarget || !map) return;
+
+    navigationCurrentPosition = {
+        lat: pos.lat,
+        lng: pos.lng,
+        accuracy: pos.accuracy
+    };
+
+    const userLatLng = [pos.lat, pos.lng];
+    const targetLatLng = [navigationTarget.lat, navigationTarget.lng];
+    const dist = map.distance(userLatLng, targetLatLng);
+
+    if (!navigationLine) {
+        navigationLine = L.polyline([userLatLng, targetLatLng], {
+            color: "red",
+            weight: 3,
+            dashArray: "6,6"
+        }).addTo(map);
+    } else {
+        navigationLine.setLatLngs([userLatLng, targetLatLng]);
+    }
+    
+    document.getElementById("navDistance").textContent =
+        "Distance : " + Math.round(dist) + " m";
+
+    document.getElementById("navAccuracy").textContent =
+        "Précision : ± " + Math.round(pos.accuracy || 0) + " m";
+
+    document.getElementById("navCoords").textContent =
+        `Point cible : ${navigationTarget.lat.toFixed(6)}, ${navigationTarget.lng.toFixed(6)}`;
+
+    if ((pos.accuracy || 0) > 25) {
+        document.getElementById("navInfo").textContent =
+            "Signal GPS faible : utilise surtout la distance et la ligne.";
+    } else {
+        document.getElementById("navInfo").textContent =
+            "Suis la ligne rouge pour atteindre le point.";
+    }
+}
+
+function startNavigation() {
+    const info = document.getElementById("navInfo");
+
+    if (!navigator.geolocation) {
+        if (info) {
+            info.textContent = "GPS non disponible sur cet appareil.";
+        }
+        return;
+    }
+
+    if (navigationWatchId !== null) {
+        navigator.geolocation.clearWatch(navigationWatchId);
+        navigationWatchId = null;
+    }
+
+    navigationWatchId = navigator.geolocation.watchPosition(
+        (pos) => {
+            const current = {
+                lat: pos.coords.latitude,
+                lng: pos.coords.longitude,
+                accuracy: pos.coords.accuracy
+            };
+
+            updateNavigationData(current);
+        },
+        () => {
+            if (info) {
+                info.textContent = "GPS indisponible. La navigation nécessite l’accès à la position.";
+            }
+        },
+        {
+            enableHighAccuracy: true,
+            maximumAge: 1000,
+            timeout: 10000
+        }
+    );
+}
+
+function navigateToPoint(index) {
+    const feature = geojson.features[index];
+    if (!feature || !feature.geometry || !Array.isArray(feature.geometry.coordinates)) return;
+
+    const [lng, lat] = feature.geometry.coordinates;
+
+    if (movingFeatureIndex !== null) {
+        cancelMovePoint();
+    }
+
+    closeMenu();
+    closePointsList();
+    closeLandmarksPanel();
+    closeForm();
+
+    navigationTarget = { lat, lng };
+    resetNavigationUI();
+
+    document.getElementById("navCoords").textContent =
+        `Point cible : ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+
+    document.getElementById("navigationPanel").classList.add("open");
+
+    if (currentPos) {
+        map.fitBounds([
+            [navigationTarget.lat, navigationTarget.lng],
+            [currentPos.lat, currentPos.lng]
+        ], { padding: [50, 50] });
+    } else {
+        map.setView([navigationTarget.lat, navigationTarget.lng], 18);
+    }
+
+    startNavigation();
+}
+
+/* =========================
+   LISTE DES POINTS
+========================= */
+function getPointPreviewLines(properties) {
+    const entries = Object.entries(properties || {})
+        .filter(([key]) => !String(key).startsWith("_"));
+
+    if (entries.length === 0) {
+        return ['<div class="point-card-preview-line"><i>Aucune propriété</i></div>'];
+    }
+
+    return entries.slice(0, 4).map(([key, value]) => {
+        return `<div class="point-card-preview-line"><b>${escapeHtml(key)}</b> : ${escapeHtml(formatValueForDisplay(value))}</div>`;
+    });
+}
+
+function renderPointsList() {
+    const body = document.getElementById("pointsListBody");
+    body.innerHTML = "";
+    normalizeSelectedIndexesAfterMutation();
+
+    if (!Array.isArray(geojson.features) || geojson.features.length === 0) {
+        body.innerHTML = `<div id="pointsListEmpty">Aucun point enregistré pour le moment.</div>`;
+        updateSelectionInfo();
+        return;
+    }
+
+    geojson.features.forEach((feature, index) => {
+        if (!feature || !feature.geometry || feature.geometry.type !== "Point" || !Array.isArray(feature.geometry.coordinates)) {
+            return;
+        }
+
+        const [lng, lat] = feature.geometry.coordinates;
+        const previewLines = getPointPreviewLines(feature.properties || {}).join("");
+        const isChecked = selectedPointIndexes.has(index);
+
+        const card = document.createElement("div");
+        card.className = `point-card ${isChecked ? "selected" : ""}`;
+        card.innerHTML = `
+            <div class="point-card-header">
+                <div class="point-card-header-left">
+                    <input class="point-checkbox" type="checkbox" ${isChecked ? "checked" : ""} onclick="event.stopPropagation()" onchange="togglePointSelection(${index}, this.checked)">
+                    <div class="point-card-title">Point ${index + 1}</div>
+                </div>
+            </div>
+            <div class="point-card-coords">
+                Lat : ${lat.toFixed(6)}<br>
+                Lng : ${lng.toFixed(6)}
+            </div>
+            <div class="point-card-preview">
+                ${previewLines}
+            </div>
+        `;
+        card.addEventListener("click", () => selectSinglePointFromList(index));
+
+        body.appendChild(card);
+    });
+
+    updateSelectionInfo();
+}
+
+function selectSinglePointFromList(index) {
+    selectedPointIndexes = new Set([index]);
+    renderPointsList();
+}
+
+function openPointsList() {
+    closeMenu();
+    closeLandmarksPanel();
+    renderPointsList();
+    document.getElementById("pointsListPanel").classList.add("open");
+    document.getElementById("pointsListBackdrop").classList.add("open");
+}
+
+function closePointsList() {
+    document.getElementById("pointsListPanel").classList.remove("open");
+    document.getElementById("pointsListBackdrop").classList.remove("open");
+}
+
+function togglePointSelection(index, isChecked) {
+    if (isChecked) {
+        selectedPointIndexes.add(index);
+    } else {
+        selectedPointIndexes.delete(index);
+    }
+    renderPointsList();
+}
+
+function toggleSelectAllPoints() {
+    if (geojson.features.length === 0) {
+        resetSelectedPoints();
+        return;
+    }
+
+    if (selectedPointIndexes.size === geojson.features.length) {
+        selectedPointIndexes.clear();
+    } else {
+        selectedPointIndexes = new Set(geojson.features.map((_, index) => index));
+    }
+
+    renderPointsList();
+}
+
+function openPointsImportFilePicker() {
+    const input = document.getElementById("pointsImportFile");
+    if (input) {
+        input.click();
+    }
+}
+
+function exportSelectedPoints() {
+    if (!Array.isArray(geojson.features) || geojson.features.length === 0) {
+        alert("Aucun point à exporter.");
+        return;
+    }
+
+    if (selectedPointIndexes.size === 0) {
+        alert("Aucun point sélectionné.");
+        return;
+    }
+
+    const selectedFeatures = geojson.features.filter((_, index) => selectedPointIndexes.has(index));
+
+    if (selectedFeatures.length === 0) {
+        alert("Aucun point valide à exporter.");
+        return;
+    }
+
+    const exportCollection = {
+        type: "FeatureCollection",
+        features: selectedFeatures
+    };
+
+    const timestamp = getTimestampForFilename();
+    const blob = new Blob(
+        [JSON.stringify(exportCollection, null, 2)],
+        { type: "application/geo+json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `data_selection_${timestamp}.geojson`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function zoomToPoint(index) {
+    const feature = geojson.features[index];
+    if (!feature || !feature.geometry || feature.geometry.type !== "Point") return;
+
+    const [lng, lat] = feature.geometry.coordinates;
+    closePointsList();
+    map.setView([lat, lng], 19);
+
+    const matchingLayer = markersByFeatureIndex.get(index);
+    if (matchingLayer) {
+        matchingLayer.openPopup();
+    }
+}
+
+function editPointFromList(index) {
+    closePointsList();
+    editPoint(index);
+}
+
+function deletePointFromList(index) {
+    const ok = confirm("Supprimer ce point ?");
+    if (!ok) return;
+
+    if (movingFeatureIndex === index) {
+        clearMoveState();
+    }
+
+    if (navigationTarget && index >= 0) {
+        closeNavigation();
+    }
+
+    geojson.features.splice(index, 1);
+
+    const shifted = new Set();
+    selectedPointIndexes.forEach(i => {
+        if (i < index) shifted.add(i);
+        else if (i > index) shifted.add(i - 1);
+    });
+    selectedPointIndexes = shifted;
+
+    saveState();
+    renderFeatures();
+    renderPointsList();
+    updateFeatureCount();
+}
+
+/* =========================
+   CONFIG CHAMPS UI
+========================= */
+function addField(name = "", type = "text", useSuggestions = false, suggestions = [], isLabel = false) {
+    const container = document.getElementById("fieldsContainer");
+
+    const div = document.createElement("div");
+    div.className = "field";
+
+    const input = document.createElement("input");
+    input.placeholder = "Nom champ";
+    input.value = name;
+    input.className = "field-name";
+
+    const select = document.createElement("select");
+    select.innerHTML = `
+        <option value="text">Texte</option>
+        <option value="int">Entier</option>
+        <option value="float">Décimal</option>
+        <option value="bool">Case</option>
+    `;
+    select.value = type;
+
+    const suggestionToggleWrapper = document.createElement("label");
+    suggestionToggleWrapper.className = "suggestion-toggle";
+
+    const suggestionToggle = document.createElement("input");
+    suggestionToggle.type = "checkbox";
+    suggestionToggle.checked = useSuggestions;
+
+    const suggestionToggleText = document.createElement("span");
+    suggestionToggleText.textContent = "Liste suggérée";
+
+    suggestionToggleWrapper.appendChild(suggestionToggle);
+    suggestionToggleWrapper.appendChild(suggestionToggleText);
+
+    const suggestionInput = document.createElement("input");
+    suggestionInput.type = "text";
+    suggestionInput.placeholder = "Valeurs séparées par ;";
+    suggestionInput.value = Array.isArray(suggestions) ? suggestions.join(" ; ") : "";
+    suggestionInput.className = "field-suggestions";
+
+    const labelToggleWrapper = document.createElement("label");
+    labelToggleWrapper.className = "label-toggle";
+
+    const labelToggle = document.createElement("input");
+    labelToggle.type = "checkbox";
+    labelToggle.checked = Boolean(isLabel);
+    labelToggle.className = "field-label-checkbox";
+
+    const labelToggleText = document.createElement("span");
+    labelToggleText.textContent = "Étiquette";
+
+    labelToggle.addEventListener("change", function() {
+        if (labelToggle.checked) {
+            enforceSingleLabelCheckbox(labelToggle);
+        }
+    });
+
+    labelToggleWrapper.appendChild(labelToggle);
+    labelToggleWrapper.appendChild(labelToggleText);
+
+    function updateSuggestionVisibility() {
+        const allowed = ["text", "int", "float"].includes(select.value);
+
+        suggestionToggleWrapper.style.display = allowed ? "flex" : "none";
+        suggestionInput.style.display = (allowed && suggestionToggle.checked) ? "block" : "none";
+
+        if (!allowed) {
+            suggestionToggle.checked = false;
+            suggestionInput.value = "";
+        }
+    }
+
+    select.addEventListener("change", updateSuggestionVisibility);
+    suggestionToggle.addEventListener("change", updateSuggestionVisibility);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.textContent = "🗑 Supprimer";
+    removeBtn.onclick = () => div.remove();
+
+    div.appendChild(input);
+    div.appendChild(select);
+    const togglesRow = document.createElement("div");
+    togglesRow.style.display = "flex";
+    togglesRow.style.gap = "12px";
+    togglesRow.style.alignItems = "center";
+    togglesRow.appendChild(suggestionToggleWrapper);
+    togglesRow.appendChild(labelToggleWrapper);
+
+    div.appendChild(togglesRow);
+    div.appendChild(suggestionInput);
+    div.appendChild(removeBtn);
+
+    container.appendChild(div);
+
+    updateSuggestionVisibility();
+}
+
+function renderFieldsConfig() {
+    const container = document.getElementById("fieldsContainer");
+    container.innerHTML = "";
+
+    if (fields.length === 0) {
+        addField();
+        return;
+    }
+
+    fields.forEach(f => addField(
+        f.name,
+        f.type,
+        Boolean(f.useSuggestions),
+        Array.isArray(f.suggestions) ? f.suggestions : [],
+        Boolean(f.isLabel)
+    ));
+}
+
+function readFieldsFromConfig() {
+    const rows = document.querySelectorAll(".field");
+    const nextFields = [];
+    const seenNames = new Set();
+
+    for (const row of rows) {
+        const inputs = row.querySelectorAll("input");
+        const select = row.querySelector("select");
+
+        const name = inputs[0]?.value.trim() || "";
+        const type = select.value;
+        const useSuggestions = inputs[1]?.checked || false;
+        const isLabel = inputs[2]?.checked || false;
+        const rawSuggestions = inputs[3]?.value || "";
+
+        if (!name) continue;
+
+        if (seenNames.has(name)) {
+            alert(`Le champ "${name}" est en double.`);
+            return null;
+        }
+
+        seenNames.add(name);
+
+        nextFields.push({
+            name,
+            type,
+            useSuggestions: ["text", "int", "float"].includes(type) ? useSuggestions : false,
+            suggestions: ["text", "int", "float"].includes(type) && useSuggestions
+                ? normalizeSuggestions(type, rawSuggestions)
+                : [],
+            isLabel: Boolean(isLabel)
+        });
+    }
+
+    return nextFields;
+}
+
+function validateImportedField(field) {
+    if (!field || typeof field !== "object") return null;
+
+    const allowedTypes = ["text", "int", "float", "bool"];
+    const name = typeof field.name === "string" ? field.name.trim() : "";
+    const type = allowedTypes.includes(field.type) ? field.type : null;
+
+    if (!name || !type) return null;
+
+    return {
+        name,
+        type,
+        useSuggestions: ["text", "int", "float"].includes(type) ? Boolean(field.useSuggestions) : false,
+        suggestions: ["text", "int", "float"].includes(type) && Array.isArray(field.suggestions)
+            ? field.suggestions.map(v => String(v).trim()).filter(v => v !== "")
+            : [],
+        isLabel: Boolean(field.isLabel)
+    };
+}
+
+function exportFieldsConfig() {
+    const nextFields = readFieldsFromConfig();
+    if (!nextFields) return;
+
+    const payload = {
+        type: "carto-fields-config",
+        version: "3.8.3",
+        exportedAt: new Date().toISOString(),
+        fields: nextFields
+    };
+
+    const timestamp = getTimestampForFilename();
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `config_champs_${timestamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function openConfigImportPicker() {
+    const input = document.getElementById("configImportFile");
+    if (input) input.click();
+}
+
+function importFieldsConfig(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        try {
+            let text = e.target.result;
+            if (typeof text !== "string") text = String(text || "");
+
+            const parsed = JSON.parse(text);
+
+            let importedFields = [];
+
+            if (parsed && parsed.type === "carto-fields-config" && Array.isArray(parsed.fields)) {
+                importedFields = parsed.fields;
+            } else if (Array.isArray(parsed)) {
+                importedFields = parsed;
+            } else {
+                alert("Le fichier n'est pas une configuration de champs valide.");
+                event.target.value = "";
+                return;
+            }
+
+            const cleanedFields = importedFields.map(validateImportedField).filter(Boolean);
+
+            let labelAlreadyAssigned = false;
+            cleanedFields.forEach(field => {
+                if (field.isLabel && !labelAlreadyAssigned) {
+                    labelAlreadyAssigned = true;
+                } else {
+                    field.isLabel = false;
+                }
+            });
+
+            if (cleanedFields.length === 0) {
+                alert("Aucun champ valide trouvé dans le fichier.");
+                event.target.value = "";
+                return;
+            }
+
+            const replaceMode = confirm(
+                "OK = remplacer la configuration actuelle\nAnnuler = fusionner avec les champs existants"
+            );
+
+            let finalFields;
+
+            if (replaceMode) {
+                finalFields = cleanedFields;
+            } else {
+                const currentFields = readFieldsFromConfig() || [];
+                const merged = [...currentFields];
+                const existingNames = new Set(currentFields.map(f => f.name));
+
+                cleanedFields.forEach(f => {
+                    if (!existingNames.has(f.name)) {
+                        merged.push(f);
+                        existingNames.add(f.name);
+                    }
+                });
+
+                finalFields = merged;
+            }
+
+            fields = finalFields;
+            saveState();
+            renderFieldsConfig();
+
+            alert(`${cleanedFields.length} champ(s) importé(s).`);
+        } catch (err) {
+            console.error("Erreur import configuration :", err);
+            alert("Impossible de lire la configuration. Vérifie qu'il s'agit bien d'un JSON valide.");
+        }
+
+        event.target.value = "";
+    };
+
+    reader.onerror = function(err) {
+        console.error("Erreur FileReader config :", err);
+        alert("Impossible de lire le fichier de configuration.");
+        event.target.value = "";
+    };
+
+    reader.readAsText(file);
+}
+
+function startApp() {
+    const nextFields = readFieldsFromConfig();
+    if (!nextFields) return;
+
+    fields = nextFields;
+    saveState();
+    localStorage.setItem(STORAGE_KEYS.configStarted, "true");
+
+    document.getElementById("configPage").style.display = "none";
+    document.getElementById("mapPage").style.display = "block";
+
+    initMap();
+}
+
+function closeConfigPage() {
+    const configStarted = localStorage.getItem(STORAGE_KEYS.configStarted) === "true";
+
+    if (!configStarted) {
+        startApp();
+        return;
+    }
+
+    const nextFields = readFieldsFromConfig();
+    if (nextFields) {
+        fields = nextFields;
+        saveState();
+    }
+
+    document.getElementById("configPage").style.display = "none";
+    document.getElementById("mapPage").style.display = "block";
+    initMap();
+}
+
+function goBackToConfig() {
+    if (movingFeatureIndex !== null) {
+        cancelMovePoint();
+    }
+
+    closeNavigation();
+
+    const nextFields = readFieldsFromConfigFromStateSafe();
+    if (nextFields) {
+        fields = nextFields;
+        saveState();
+    }
+
+    closeMenu();
+    closePointsList();
+    document.getElementById("mapPage").style.display = "none";
+    document.getElementById("configPage").style.display = "block";
+    renderFieldsConfig();
+}
+
+function readFieldsFromConfigFromStateSafe() {
+    const container = document.getElementById("fieldsContainer");
+    if (!container || container.children.length === 0) return fields;
+    return readFieldsFromConfig() || fields;
+}
+
+/* =========================
+   FONDS DE CARTE
+========================= */
+function createBaseLayers() {
+    baseLayers = {
+        osm: L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap contributors"
+        }),
+
+        ignPlan: L.tileLayer(
+            "https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image/png",
+            {
+                maxZoom: 19,
+                attribution: "&copy; IGN / Géoplateforme"
+            }
+        ),
+
+        ignOrtho: L.tileLayer(
+            "https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image/jpeg",
+            {
+                maxZoom: 19,
+                attribution: "&copy; IGN / Géoplateforme"
+            }
+        )
+    };
+
+    Object.values(baseLayers).forEach(layer => {
+        layer.on("tileerror", function() {
+            console.warn("Erreur de chargement de tuiles pour le fond de carte :", currentBasemapKey);
+        });
+    });
+}
+
+function setBaseLayer(key) {
+    if (!baseLayers[key]) key = "osm";
+
+    if (currentBaseLayer && map.hasLayer(currentBaseLayer)) {
+        map.removeLayer(currentBaseLayer);
+    }
+
+    currentBasemapKey = key;
+    currentBaseLayer = baseLayers[key];
+    currentBaseLayer.addTo(map);
+
+    updateBasemapLabel();
+    saveState();
+}
+
+function handleBasemapChange() {
+    const key = document.getElementById("basemapSelect").value;
+    setBaseLayer(key);
+}
+
+/* =========================
+   MAP INIT
+========================= */
+function initMap() {
+    if (!map) {
+        map = L.map("map").setView([43.6, 1.44], 13);
+
+        createBaseLayers();
+        setBaseLayer(currentBasemapKey);
+
+        featuresLayer = L.layerGroup().addTo(map);
+        landmarkMarkersLayer = L.layerGroup().addTo(map);
+
+        map.on("click", () => {
+            closeMenu();
+        });
+
+        map.getContainer().addEventListener("contextmenu", function(e) {
+            e.preventDefault();
+        });
+
+        setupLongPressCreation();
+    }
+
+    updateBasemapLabel();
+    updateNetworkStatus();
+    updateUsernameUI();
+    updateGPSMenuButton();
+    ensureKMLLayersBuilt();
+    renderFeatures();
+    renderPointsList();
+    renderLandmarks();
+    refreshKMLLayersOnMap();
+
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 120);
+
+    if (watchId === null) {
+        startGPS();
+    }
+}
+
+/* =========================
+   RENDU DES POINTS
+========================= */
+function renderFeatures() {
+    if (!map || !featuresLayer) return;
+
+    featuresLayer.clearLayers();
+    markersByFeatureIndex = new Map();
+
+    geojson.features.forEach((feature, index) => {
+        if (
+            !feature ||
+            feature.type !== "Feature" ||
+            !feature.geometry ||
+            feature.geometry.type !== "Point" ||
+            !Array.isArray(feature.geometry.coordinates)
+        ) {
+            return;
+        }
+
+        const [lng, lat] = feature.geometry.coordinates;
+        const properties = feature.properties || {};
+
+        const marker = L.marker([lat, lng]).addTo(featuresLayer);
+        marker.bindPopup(buildPopupContent(properties, index));
+
+        const labelFieldName = getLabelFieldName();
+        const labelValue = labelFieldName ? properties[labelFieldName] : null;
+        const labelText = typeof labelValue === "string" || typeof labelValue === "number"
+            ? String(labelValue).trim()
+            : "";
+
+        if (labelText) {
+            marker.bindTooltip(labelText, {
+                permanent: true,
+                direction: "top",
+                offset: [0, -14],
+                opacity: 1,
+                className: "point-label-tooltip"
+            });
+        }
+
+        markersByFeatureIndex.set(index, marker);
+    });
+
+    updateFeatureCount();
+}
+
+/* =========================
+   GPS
+========================= */
+function startGPS() {
+    if (!navigator.geolocation) {
+        alert("GPS non supporté");
+        return;
+    }
+
+    if (watchId !== null) {
+        updateGPSInfo("GPS déjà actif");
+        updateGPSMenuButton();
+        return;
+    }
+
+    hasCenteredOnFirstFix = false;
+    updateGPSInfo("GPS : recherche...");
+
+    watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            const acc = pos.coords.accuracy;
+            const heading = pos.coords.heading;
+            const altitude = pos.coords.altitude;
+
+            currentPos = {
+                lat,
+                lng,
+                altitude: Number.isFinite(altitude) ? altitude : null
+            };
+
+            if (!userMarker) {
+                userMarker = L.marker([lat, lng], {
+                    icon: createUserPositionIcon()
+                }).addTo(map);
+            } else {
+                userMarker.setLatLng([lat, lng]);
+
+                if (heading !== null && !isNaN(heading)) {
+                    userMarker.setIcon(createUserPositionIcon());
+                }
+            }
+
+            if (!hasCenteredOnFirstFix) {
+                map.setView([lat, lng], 18);
+                hasCenteredOnFirstFix = true;
+            }
+
+            updateGPSInfo(
+                `GPS : ON<br>` +
+                `Précision : ${Math.round(acc)} m<br>` +
+                `Lat : ${lat.toFixed(6)}<br>` +
+                `Lng : ${lng.toFixed(6)}`
+            );
+        },
+        (err) => {
+            console.error(err);
+            updateGPSInfo("GPS ERROR");
+            stopGPS(false);
+        },
+        {
+            enableHighAccuracy: true,
+            maximumAge: 1000,
+            timeout: 10000
+        }
+    );
+
+    updateGPSMenuButton();
+}
+
+function stopGPS(updateText = true) {
+    if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+    }
+
+    if (updateText) {
+        updateGPSInfo("GPS : OFF");
+    }
+
+    updateGPSMenuButton();
+}
+
+function centerOnUser() {
+    if (!currentPos) {
+        alert("Aucune position GPS disponible");
+        return;
+    }
+    map.setView([currentPos.lat, currentPos.lng], 18);
+}
+
+/* =========================
+   CREATION POINTS
+========================= */
+function openNewPointFormAtCoords(latlng, sourceLabel) {
+    if (!latlng) return;
+
+    if (movingFeatureIndex !== null) {
+        cancelMovePoint();
+    }
+
+    closeNavigation();
+    closeMenu();
+
+    editingFeatureIndex = null;
+    pendingPointCoords = {
+        lat: latlng.lat,
+        lng: latlng.lng,
+        altitude: Number.isFinite(latlng.altitude) ? latlng.altitude : null
+    };
+
+    document.getElementById("formTitle").textContent = "Nouveau point";
+    document.getElementById("deleteBtn").classList.add("hidden");
+
+    setPointModeInfo(
+        `Création à <b>${pendingPointCoords.lat.toFixed(6)}</b>, <b>${pendingPointCoords.lng.toFixed(6)}</b><br>` +
+        `Origine : ${escapeHtml(sourceLabel)}`
+    );
+
+    currentPhotoData = null;
+    buildDynamicForm();
+    updatePhotoUI();
+    document.getElementById("formPopup").style.display = "block";
+}
+
+function addPoint() {
+    if (!currentPos) {
+        alert("Active GPS");
+        return;
+    }
+
+    openNewPointFormAtCoords(currentPos, "position GPS actuelle");
+}
+
+/* =========================
+   APPUI LONG / CLIC DROIT
+========================= */
+function clearLongPressTimer() {
+    if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+    }
+}
+
+function setupLongPressCreation() {
+    map.on("mousedown", startLongPress);
+    map.on("touchstart", startLongPress);
+
+    map.on("mouseup", cancelLongPress);
+    map.on("touchend", cancelLongPress);
+    map.on("mouseout", cancelLongPress);
+    map.on("movestart", cancelLongPress);
+    map.on("zoomstart", cancelLongPress);
+    map.on("dragstart", cancelLongPress);
+    map.on("touchmove", cancelLongPress);
+
+    map.on("contextmenu", function(e) {
+        cancelLongPress();
+
+        if (e.originalEvent) {
+            e.originalEvent.preventDefault();
+            e.originalEvent.stopPropagation();
+        }
+
+        if (movingFeatureIndex !== null || movingLandmarkId !== null) {
+            return;
+        }
+
+        openNewPointFormAtCoords(
+            { lat: e.latlng.lat, lng: e.latlng.lng, altitude: null },
+            "clic droit sur la carte"
+        );
+    });
+}
+
+function startLongPress(e) {
+    if (document.getElementById("formPopup").style.display === "block") return;
+    if (movingFeatureIndex !== null || movingLandmarkId !== null) return;
+
+    if (e.originalEvent && typeof e.originalEvent.button === "number" && e.originalEvent.button !== 0) {
+        return;
+    }
+
+    clearLongPressTimer();
+
+    const latlng = e.latlng;
+
+    longPressTimer = setTimeout(() => {
+        if (movingFeatureIndex !== null || movingLandmarkId !== null) {
+            clearLongPressTimer();
+            return;
+        }
+
+        openNewPointFormAtCoords(
+            { lat: latlng.lat, lng: latlng.lng, altitude: null },
+            "appui long sur la carte"
+        );
+        clearLongPressTimer();
+    }, LONG_PRESS_DELAY);
+}
+
+function cancelLongPress() {
+    clearLongPressTimer();
+}
+
+/* =========================
+   FORMULAIRE POINT
+========================= */
+function buildDynamicForm(values = {}) {
+    const form = document.getElementById("dynamicForm");
+    form.innerHTML = "";
+
+    fields.forEach((field, index) => {
+        const row = document.createElement("div");
+        row.className = "form-row";
+
+        const label = document.createElement("label");
+        label.setAttribute("for", `field_${index}`);
+        label.textContent = field.name;
+
+        let input;
+
+        if (field.type === "bool") {
+            input = document.createElement("input");
+            input.type = "checkbox";
+            input.checked = Boolean(values[field.name]);
+        } else if (fieldUsesDropdown(field)) {
+            input = document.createElement("select");
+
+            const emptyOption = document.createElement("option");
+            emptyOption.value = "";
+            emptyOption.textContent = "— Choisir —";
+            input.appendChild(emptyOption);
+
+            field.suggestions.forEach(suggestion => {
+                const option = document.createElement("option");
+                option.value = String(suggestion);
+                option.textContent = String(suggestion);
+                input.appendChild(option);
+            });
+
+            const currentValue = values[field.name];
+            input.value = currentValue !== undefined && currentValue !== null ? String(currentValue) : "";
+        } else if (field.type === "int") {
+            input = document.createElement("input");
+            input.type = "number";
+            input.step = "1";
+            input.inputMode = "numeric";
+            input.placeholder = field.name;
+            input.value = values[field.name] ?? "";
+        } else if (field.type === "float") {
+            input = document.createElement("input");
+            input.type = "number";
+            input.step = "any";
+            input.inputMode = "decimal";
+            input.placeholder = field.name;
+            input.value = values[field.name] ?? "";
+        } else {
+            input = document.createElement("input");
+            input.type = "text";
+            input.placeholder = field.name;
+            input.value = values[field.name] ?? "";
+        }
+
+        input.id = `field_${index}`;
+
+        row.appendChild(label);
+        row.appendChild(input);
+        form.appendChild(row);
+    });
+}
+
+function collectFormValues() {
+    const properties = {};
+
+    for (let i = 0; i < fields.length; i++) {
+        const field = fields[i];
+        const input = document.getElementById(`field_${i}`);
+        if (!input) continue;
+
+        if (field.type === "bool") {
+            properties[field.name] = input.checked;
+        } else if (field.type === "int") {
+            const rawValue = String(input.value ?? "").trim();
+
+            if (rawValue === "") {
+                properties[field.name] = null;
+            } else {
+                const parsed = parseInt(rawValue, 10);
+                if (Number.isNaN(parsed)) {
+                    alert(`Le champ "${field.name}" doit être un entier.`);
+                    return null;
+                }
+                properties[field.name] = parsed;
+            }
+        } else if (field.type === "float") {
+            const rawValue = String(input.value ?? "").trim();
+
+            if (rawValue === "") {
+                properties[field.name] = null;
+            } else {
+                const parsed = parseFloat(rawValue);
+                if (Number.isNaN(parsed)) {
+                    alert(`Le champ "${field.name}" doit être un nombre décimal.`);
+                    return null;
+                }
+                properties[field.name] = parsed;
+            }
+        } else {
+            properties[field.name] = String(input.value ?? "").trim();
+        }
+    }
+
+    return properties;
+}
+
+function editPoint(index) {
+    const feature = geojson.features[index];
+    if (!feature) return;
+
+    if (movingFeatureIndex !== null) {
+        cancelMovePoint();
+    }
+
+    closeNavigation();
+
+    editingFeatureIndex = index;
+    pendingPointCoords = null;
+
+    document.getElementById("formTitle").textContent = "Modifier le point";
+    document.getElementById("deleteBtn").classList.remove("hidden");
+    setPointModeInfo("Modification des attributs du point existant.");
+
+    currentPhotoData = feature.properties && typeof feature.properties._photo === "string"
+        ? feature.properties._photo
+        : null;
+
+    buildDynamicForm(feature.properties || {});
+    updatePhotoUI();
+    document.getElementById("formPopup").style.display = "block";
+}
+
+function savePoint() {
+    const properties = collectFormValues();
+    if (!properties) return;
+
+    if (editingFeatureIndex === null) {
+        if (!pendingPointCoords) {
+            alert("Aucune coordonnée de création disponible.");
+            return;
+        }
+
+        const hiddenMeta = buildHiddenPointMetadata(pendingPointCoords);
+        hiddenMeta._photo = currentPhotoData || null;
+
+        const feature = {
+            type: "Feature",
+            geometry: {
+                type: "Point",
+                coordinates: [pendingPointCoords.lng, pendingPointCoords.lat]
+            },
+            properties: {
+                ...properties,
+                ...hiddenMeta
+            }
+        };
+
+        geojson.features.push(feature);
+    } else {
+        const existingFeature = geojson.features[editingFeatureIndex];
+        if (!existingFeature) {
+            alert("Point introuvable.");
+            closeForm();
+            return;
+        }
+
+        const coords = existingFeature.geometry && Array.isArray(existingFeature.geometry.coordinates)
+            ? {
+                lng: Number(existingFeature.geometry.coordinates[0]),
+                lat: Number(existingFeature.geometry.coordinates[1]),
+                altitude: existingFeature.properties && Object.prototype.hasOwnProperty.call(existingFeature.properties, "_altitude")
+                    ? existingFeature.properties._altitude
+                    : null
+            }
+            : { lat: null, lng: null, altitude: null };
+
+        const hiddenMeta = buildHiddenPointMetadata(coords, existingFeature.properties || {});
+        hiddenMeta._photo = currentPhotoData || null;
+
+        existingFeature.properties = {
+            ...properties,
+            ...hiddenMeta
+        };
+    }
+
+    saveState();
+    renderFeatures();
+    renderPointsList();
+    closeForm();
+}
+
+function deletePoint(index) {
+    const feature = geojson.features[index];
+    if (!feature) return;
+
+    const ok = confirm("Supprimer ce point ?");
+    if (!ok) return;
+
+    if (movingFeatureIndex === index) {
+        clearMoveState();
+    }
+
+    closeNavigation();
+
+    geojson.features.splice(index, 1);
+
+    const shifted = new Set();
+    selectedPointIndexes.forEach(i => {
+        if (i < index) shifted.add(i);
+        else if (i > index) shifted.add(i - 1);
+    });
+    selectedPointIndexes = shifted;
+
+    saveState();
+    renderFeatures();
+    renderPointsList();
+    closeForm();
+}
+
+function deleteCurrentEditingPoint() {
+    if (editingFeatureIndex === null) return;
+    deletePoint(editingFeatureIndex);
+}
+
+/* =========================
+   EXPORT / IMPORT POINTS
+========================= */
+function exportGeoJSON() {
+    if (!Array.isArray(geojson.features) || geojson.features.length === 0) {
+        alert("Aucun point à exporter.");
+        return;
+    }
+
+    const timestamp = getTimestampForFilename();
+
+    const blob = new Blob(
+        [JSON.stringify(geojson, null, 2)],
+        { type: "application/geo+json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `data_complete_${timestamp}.geojson`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+}
+
+function importGeoJSON(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    if (movingFeatureIndex !== null) {
+        cancelMovePoint();
+    }
+
+    closeNavigation();
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        try {
+            let text = e.target.result;
+            if (typeof text !== "string") {
+                text = String(text || "");
+            }
+
+            const parsed = JSON.parse(text);
+
+            if (!parsed || parsed.type !== "FeatureCollection" || !Array.isArray(parsed.features)) {
+                alert("Le fichier importé n'est pas un GeoJSON FeatureCollection valide.");
+                event.target.value = "";
+                return;
+            }
+
+            const validFeatures = parsed.features
+                .map(sanitizeImportedFeature)
+                .filter(Boolean);
+
+            if (validFeatures.length === 0) {
+                alert("Aucun point valide à importer.");
+                event.target.value = "";
+                return;
+            }
+
+            const modeReplace = confirm(
+                "OK = remplacer les points actuels\nAnnuler = ajouter aux points existants"
+            );
+
+            if (modeReplace) {
+                geojson.features = validFeatures;
+            } else {
+                geojson.features = geojson.features.concat(validFeatures);
+            }
+
+            resetSelectedPoints();
+            saveState();
+            renderFeatures();
+            renderPointsList();
+
+            if (geojson.features.length > 0 && map) {
+                const bounds = L.latLngBounds(
+                    geojson.features.map(f => [
+                        f.geometry.coordinates[1],
+                        f.geometry.coordinates[0]
+                    ])
+                );
+
+                if (bounds.isValid()) {
+                    map.fitBounds(bounds, { padding: [30, 30] });
+                }
+            }
+
+            alert(`${validFeatures.length} point(s) importé(s).`);
+        } catch (err) {
+            console.error("Erreur import GeoJSON :", err);
+            alert("Erreur lors de la lecture du fichier. Vérifie qu'il s'agit bien d'un GeoJSON valide.");
+        }
+
+        event.target.value = "";
+    };
+
+    reader.onerror = function(err) {
+        console.error("Erreur FileReader :", err);
+        alert("Impossible de lire le fichier sélectionné.");
+        event.target.value = "";
+    };
+
+    reader.readAsText(file);
+}
+
+
+function triggerPhotoInput() {
+    const input = document.getElementById("photoInput");
+    if (!input) return;
+    input.click();
+}
+
+function removePhoto() {
+    currentPhotoData = null;
+    const input = document.getElementById("photoInput");
+    if (input) input.value = "";
+    updatePhotoUI();
+}
+
+function updatePhotoUI() {
+    const preview = document.getElementById("photoPreview");
+    const actionBtn = document.getElementById("photoActionBtn");
+    const deleteBtn = document.getElementById("photoDeleteBtn");
+
+    if (!preview || !actionBtn || !deleteBtn) return;
+
+    if (currentPhotoData) {
+        preview.innerHTML = `<img src="${currentPhotoData}" alt="Photo du point">`;
+        actionBtn.textContent = "📷 Remplacer la photo";
+        deleteBtn.classList.remove("hidden");
+    } else {
+        preview.innerHTML = "<i>Aucune photo</i>";
+        actionBtn.textContent = "📷 Ajouter une photo";
+        deleteBtn.classList.add("hidden");
+    }
+}
+
+function resizeImageFileToDataUrl(file, callback) {
+    const reader = new FileReader();
+
+    reader.onload = function(evt) {
+        const img = new Image();
+
+        img.onload = function() {
+            const maxSize = 1280;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height && width > maxSize) {
+                height = Math.round((height * maxSize) / width);
+                width = maxSize;
+            } else if (height >= width && height > maxSize) {
+                width = Math.round((width * maxSize) / height);
+                height = maxSize;
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+            callback(dataUrl);
+        };
+
+        img.onerror = function() {
+            alert("Impossible de préparer cette photo.");
+        };
+
+        img.src = evt.target.result;
+    };
+
+    reader.onerror = function() {
+        alert("Impossible de lire cette photo.");
+    };
+
+    reader.readAsDataURL(file);
+}
+
+function handlePhotoFileChange(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    if (!file.type || !file.type.startsWith("image/")) {
+        alert("Veuillez choisir une image.");
+        event.target.value = "";
+        return;
+    }
+
+    resizeImageFileToDataUrl(file, function(dataUrl) {
+        currentPhotoData = dataUrl;
+        updatePhotoUI();
+    });
+}
+
+/* =========================
+   RESET GLOBAL
+========================= */
+function clearAllData() {
+    const ok = confirm("Tout effacer ?\nCela supprimera les points enregistrés localement.");
+    if (!ok) return;
+
+    if (movingFeatureIndex !== null) {
+        clearMoveState();
+    }
+
+    closeNavigation();
+
+    geojson = { type: "FeatureCollection", features: [] };
+    resetSelectedPoints();
+    saveState();
+    renderFeatures();
+    renderPointsList();
+    closeForm();
+}
+
+/* =========================
+   BOOT
+========================= */
+function bootApp() {
+    loadState();
+    renderFieldsConfig();
+    updateFeatureCount();
+    updateNetworkStatus();
+    updateSelectionInfo();
+    updateLandmarkSelectionInfo();
+    updateUsernameUI();
+
+    window.addEventListener("online", updateNetworkStatus);
+    window.addEventListener("offline", updateNetworkStatus);
+
+    document.getElementById("homePage").style.display = "flex";
+    document.getElementById("configPage").style.display = "none";
+    document.getElementById("mapPage").style.display = "none";
+
+    const usernameInput = document.getElementById("usernameInput");
+    if (usernameInput) {
+        usernameInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                enterApp();
+            }
+        });
+    }
+
+    updateGPSMenuButton();
+    updateMovePanel();
+    resetNavigationUI();
+    resetLandmarkForm();
+    renderLandmarks();
+    updatePhotoUI();
+    updateKMLUI();
+}
+
+bootApp();
+</script>
+
+</body>
+</html>
